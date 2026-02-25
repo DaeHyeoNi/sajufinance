@@ -67,7 +67,7 @@ def get_or_create_saju(
 
     # 캐시 미스 → 계산 + Gemini 풀이
     pillars = _compute_pillars(birth_year, birth_month, birth_day, birth_hour, gender)
-    reading = generate_saju_reading(pillars, gender)
+    reading = generate_saju_reading(pillars, gender, birth_hour)
 
     entry = SajuCache(
         birth_date=birth_date,

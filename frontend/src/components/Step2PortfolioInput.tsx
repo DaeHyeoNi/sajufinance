@@ -110,7 +110,7 @@ export default function Step2PortfolioInput({ sajuData, onComplete }: Props) {
             </div>
           )}
 
-          <h3>파싱된 포트폴리오</h3>
+          <h3>인식된 포트폴리오</h3>
           <table className="portfolio-table">
             <thead>
               <tr>

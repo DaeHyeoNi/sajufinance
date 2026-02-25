@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import os
 import re
+from datetime import date
 from typing import Any
 
 from google import genai
@@ -34,14 +35,27 @@ def _extract_json(text: str) -> Any:
     return json.loads(raw.strip())
 
 
+_SIJU_LABEL: dict[str, str] = {
+    "자시": "자시(23:30~01:30)", "축시": "축시(01:30~03:30)",
+    "인시": "인시(03:30~05:30)", "묘시": "묘시(05:30~07:30)",
+    "진시": "진시(07:30~09:30)", "사시": "사시(09:30~11:30)",
+    "오시": "오시(11:30~13:30)", "미시": "미시(13:30~15:30)",
+    "신시": "신시(15:30~17:30)", "유시": "유시(17:30~19:30)",
+    "술시": "술시(19:30~21:30)", "해시": "해시(21:30~23:30)",
+}
+
 # ── 1. 사주 풀이 ──────────────────────────────────────────────────────────────
 
-def generate_saju_reading(pillars: dict[str, Any], gender: str) -> str:
+def generate_saju_reading(pillars: dict[str, Any], gender: str, birth_hour: str | None = None) -> str:
     """사주 팔자 데이터를 바탕으로 Gemini가 풀이 텍스트를 생성."""
+    today = date.today().strftime("%Y년 %m월 %d일")
+    hour_str = _SIJU_LABEL.get(birth_hour, "미상") if birth_hour else "미상"
     prompt = f"""당신은 전문 사주 명리학자입니다.
 아래는 사용자의 사주 팔자 데이터입니다.
 
+오늘 날짜: {today}
 성별: {gender}
+태어난 시: {hour_str}
 사주 데이터 (JSON):
 {json.dumps(pillars, ensure_ascii=False, indent=2)}
 
@@ -50,8 +64,9 @@ def generate_saju_reading(pillars: dict[str, Any], gender: str) -> str:
 2. 오행(五行) 균형 분석
 3. 용신(用神) 및 기신(忌神)
 4. 재물운(財運) — 투자/재테크 관련 성향 중심으로
-5. 현재 대운(大運) 및 세운(歲運)의 흐름
+5. 현재 대운(大運) 및 세운(歲運)의 흐름 (오늘 날짜 기준)
 
+풀이 작성 시 출생 시각을 언급할 때는 "{hour_str}" 형식으로 표기하세요. "18:00" 같은 시각 숫자 형식은 사용하지 마세요.
 풀이는 한국어로 작성하고, 투자 성향 분석에 특히 집중해 주세요."""
     return _call(prompt)
 

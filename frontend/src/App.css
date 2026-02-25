@@ -140,7 +140,7 @@ textarea { resize: vertical; }
   border-bottom: 1px solid #ede7e0;
   white-space: nowrap;
 }
-.reason-cell { font-size: 0.83rem; color: #5a5a5a; white-space: normal; min-width: 140px; }
+.reason-cell { font-size: 0.83rem; color: #5a5a5a; white-space: normal; min-width: 140px; max-width: 220px; word-break: break-word; }
 
 /* 마크다운 렌더링 스타일 */
 .reading-text p, .narrative-text p { margin-bottom: 0.75rem; }
@@ -186,7 +186,6 @@ textarea { resize: vertical; }
 .pillar-value { display: block; font-size: 1.3rem; font-weight: 700; color: #5c3317; }
 
 .reading-text, .narrative-text {
-  white-space: pre-wrap;
   line-height: 1.75;
   font-size: 0.93rem;
   color: #3d3d3d;

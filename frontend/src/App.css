@@ -1,0 +1,206 @@
+/* ── Reset & Base ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Noto Sans KR', -apple-system, sans-serif;
+  background: #f5f0eb;
+  color: #2d2d2d;
+  min-height: 100vh;
+}
+
+/* ── Layout ───────────────────────────────────────────────────────────────── */
+.app { max-width: 800px; width: 100%; margin: 0 auto; padding: 1rem; }
+
+.app-header {
+  text-align: center;
+  padding: 2rem 1rem 1.5rem;
+}
+.app-header h1 { font-size: 1.8rem; color: #5c3317; margin-bottom: 0.4rem; }
+.app-header p  { color: #7a6552; font-size: 0.95rem; }
+
+.step-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.2rem;
+}
+.step-dot {
+  width: 2rem; height: 2rem;
+  border-radius: 50%;
+  background: #d9cfc5;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.9rem; color: #888;
+}
+.step-dot.active { background: #8b4513; color: #fff; }
+.step-dot.done   { background: #c8956a; color: #fff; }
+
+.app-main { padding: 0.5rem 0 3rem; }
+
+/* ── Step Container ───────────────────────────────────────────────────────── */
+.step-container {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+}
+.step-container h2 { font-size: 1.25rem; margin-bottom: 0.5rem; color: #5c3317; }
+.step-desc { color: #7a6552; font-size: 0.9rem; margin-bottom: 1.5rem; }
+
+/* ── Form Elements ────────────────────────────────────────────────────────── */
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.2rem;
+}
+.form-row label, .form-section label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #5c3317;
+}
+.date-inputs { display: flex; gap: 0.5rem; }
+.date-inputs input { flex: 1; }
+
+input[type=number], input[type=text], select, textarea {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #d0c4b8;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: #faf8f6;
+  outline: none;
+  transition: border-color 0.2s;
+}
+input:focus, select:focus, textarea:focus { border-color: #8b4513; }
+textarea { resize: vertical; }
+
+.radio-group { display: flex; gap: 1rem; }
+.radio-label {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.hint { font-size: 0.82rem; color: #9e8a78; margin-top: 0.2rem; }
+.error { color: #c62828; font-size: 0.88rem; margin: 0.5rem 0; }
+
+.form-section { margin-bottom: 1.4rem; }
+.form-section label { display: block; margin-bottom: 0.4rem; }
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+.btn-primary {
+  padding: 0.7rem 2rem;
+  background: #8b4513;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-primary:hover:not(:disabled) { background: #6b3410; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-secondary {
+  padding: 0.7rem 1.5rem;
+  background: transparent;
+  color: #8b4513;
+  border: 1.5px solid #8b4513;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-secondary:hover { background: #f5ede6; }
+
+.btn-group { display: flex; gap: 1rem; margin-top: 1rem; }
+
+/* ── Tables ───────────────────────────────────────────────────────────────── */
+.table-scroll { overflow-x: auto; }
+
+.portfolio-table, .rebalance-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin-top: 0.75rem;
+}
+.portfolio-table th, .rebalance-table th {
+  background: #f5ede6;
+  padding: 0.5rem 0.6rem;
+  text-align: left;
+  border-bottom: 2px solid #d9cfc5;
+  color: #5c3317;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+.portfolio-table td, .rebalance-table td {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid #ede7e0;
+  white-space: nowrap;
+}
+.reason-cell { font-size: 0.83rem; color: #5a5a5a; white-space: normal; min-width: 140px; }
+
+/* 마크다운 렌더링 스타일 */
+.reading-text p, .narrative-text p { margin-bottom: 0.75rem; }
+.reading-text p:last-child, .narrative-text p:last-child { margin-bottom: 0; }
+.reading-text ul, .narrative-text ul,
+.reading-text ol, .narrative-text ol { padding-left: 1.4rem; margin-bottom: 0.75rem; }
+.reading-text li, .narrative-text li { margin-bottom: 0.3rem; }
+.reading-text strong, .narrative-text strong { color: #5c3317; }
+.reading-text h1, .reading-text h2, .reading-text h3,
+.narrative-text h1, .narrative-text h2, .narrative-text h3 {
+  font-size: 1rem; color: #5c3317; margin: 1rem 0 0.4rem;
+}
+
+/* ── Warning ──────────────────────────────────────────────────────────────── */
+.warning {
+  background: #fff8e1;
+  border: 1px solid #f9a825;
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.88rem;
+}
+.warning ul { margin: 0.3rem 0 0.5rem 1.2rem; }
+
+/* ── Results ──────────────────────────────────────────────────────────────── */
+.result-section { margin-bottom: 2rem; }
+.result-section h3 {
+  font-size: 1.05rem; color: #5c3317;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid #e8ddd5;
+  padding-bottom: 0.4rem;
+}
+
+.pillars { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.pillar-card {
+  background: #f5ede6;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  min-width: 70px;
+}
+.pillar-label { display: block; font-size: 0.75rem; color: #9e8a78; }
+.pillar-value { display: block; font-size: 1.3rem; font-weight: 700; color: #5c3317; }
+
+.reading-text, .narrative-text {
+  white-space: pre-wrap;
+  line-height: 1.75;
+  font-size: 0.93rem;
+  color: #3d3d3d;
+  background: #faf8f6;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.summary-badges { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+.badge {
+  padding: 0.35rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.badge.buy  { background: #e8f5e9; color: #2e7d32; }
+.badge.sell { background: #ffebee; color: #c62828; }

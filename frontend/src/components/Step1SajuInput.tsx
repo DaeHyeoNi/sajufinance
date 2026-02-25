@@ -1,6 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { SajuAnalyzeRequest, SajuAnalyzeResponse } from '../types'
 import { api } from '../api/client'
+
+const STORAGE_KEY = 'saju_step1_form'
+
+function loadForm(): SajuAnalyzeRequest {
+  try {
+    const saved = sessionStorage.getItem(STORAGE_KEY)
+    if (saved) return JSON.parse(saved)
+  } catch {}
+  return { birth_year: 1990, birth_month: 1, birth_day: 1, birth_hour: null, gender: '남' }
+}
 
 const SIJU_OPTIONS: { value: string; label: string }[] = [
   { value: '모름', label: '모름' },
@@ -23,15 +33,13 @@ interface Props {
 }
 
 export default function Step1SajuInput({ onComplete }: Props) {
-  const [form, setForm] = useState<SajuAnalyzeRequest>({
-    birth_year: 1990,
-    birth_month: 1,
-    birth_day: 1,
-    birth_hour: null,
-    gender: '남',
-  })
+  const [form, setForm] = useState<SajuAnalyzeRequest>(loadForm)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(form))
+  }, [form])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

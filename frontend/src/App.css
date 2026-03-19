@@ -727,22 +727,66 @@ textarea { resize: vertical; }
   font-size: 0.88rem;
 }
 
-/* ── 별점 ─────────────────────────────────────────────────────────────────── */
-.score-stars {
+/* ── 100점 점수 원형 ──────────────────────────────────────────────────────── */
+.score-display-wrap {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
-  font-size: 2.1rem;
+  gap: 0.6rem;
 }
 
-.star.filled { color: var(--color-accent-light); filter: drop-shadow(0 1px 3px rgba(200,149,106,0.4)); }
-.star.empty  { color: #d9cfc5; }
+.score-circle {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+.score-circle:hover { transform: scale(1.04); }
 
-.score-label {
+.score-number {
+  font-size: 2.4rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.score-denom {
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.7;
+  margin-top: 0.1rem;
+}
+.score-grade {
   font-size: 1rem;
   font-weight: 700;
-  color: var(--color-primary);
-  margin-left: 0.6rem;
+  letter-spacing: 0.01em;
+}
+
+/* 점수별 색상 */
+.score-great {
+  background: linear-gradient(135deg, #e6f4ea, #d4edda);
+  border-color: #8fcf9e;
+  color: #1a6b2a;
+}
+.score-good {
+  background: linear-gradient(135deg, #fff4e0, #fde8b8);
+  border-color: #f0bc6a;
+  color: #c45000;
+}
+.score-neutral {
+  background: linear-gradient(135deg, #f5ede6, #ede4da);
+  border-color: #d0c4b8;
+  color: #7a6552;
+}
+.score-poor {
+  background: linear-gradient(135deg, #fdecea, #fad7d5);
+  border-color: #f4a7a7;
+  color: #b71c1c;
 }
 
 .compat-score-section {
@@ -898,6 +942,42 @@ textarea { resize: vertical; }
   border-radius: 2px;
 }
 
+/* ── 궁합 페이지 섹션 레이블 ─────────────────────────────────────────────── */
+.compat-section-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text-light);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.compat-section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--color-border), transparent);
+}
+
+/* ── 신비로운 구분선 ──────────────────────────────────────────────────────── */
+.compat-mystic-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0 1.1rem;
+  color: var(--color-accent);
+  font-size: 1.1rem;
+}
+.compat-mystic-divider::before,
+.compat-mystic-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--color-border), transparent);
+}
+
 /* ── 반응형 ────────────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .app-header h1 { font-size: 1.5rem; }
@@ -947,8 +1027,8 @@ textarea { resize: vertical; }
   .intro-card-title { font-size: 1.05rem; }
 
   /* 궁합 */
-  .score-stars { font-size: 1.65rem; }
-  .score-label { font-size: 0.9rem; }
+  .score-circle { width: 90px; height: 90px; }
+  .score-number { font-size: 2rem; }
   .ceo-info-label { min-width: 70px; }
 
   .market-tabs { gap: 0.35rem; }

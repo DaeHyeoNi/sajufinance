@@ -627,7 +627,7 @@ export default function CompatibilityPage() {
                       <span className="ceo-info-label">{t('compatibility.ceoCeo')}</span>
                       <span className="ceo-info-value">{ceoInfo.ceo_name}</span>
                     </div>
-                    <div className="ceo-info-row">
+                    <div className="ceo-info-row ceo-info-row--birth">
                       <span className="ceo-info-label">{t('compatibility.ceoBirth')}</span>
                       <span className="ceo-info-value">
                         {ceoInfo.ceo_birth_date}
@@ -635,6 +635,25 @@ export default function CompatibilityPage() {
                           <span className="ceo-birth-year-only"> ({t('compatibility.birthYearOnly')})</span>
                         )}
                       </span>
+                      <button
+                        type="button"
+                        className="btn-edit-birth"
+                        onClick={() => {
+                          setUseCustomDate(true)
+                          const parts = ceoInfo.ceo_birth_date.split('-')
+                          setManualCeo({
+                            company_name: ceoInfo.company_name || '',
+                            ceo_name: ceoInfo.ceo_name || '',
+                            year: parts[0] || '',
+                            month: parts[1] || '',
+                            day: parts[2] || '',
+                            birth_hour: '모름',
+                          })
+                          setError(null)
+                        }}
+                      >
+                        ✏️ {t('compatibility.ceoWrongBtn')}
+                      </button>
                     </div>
                     {ceoInfo.from_cache && (
                       <p className="hint" style={{ marginTop: '0.5rem' }}>{t('compatibility.ceoCached')}</p>
@@ -642,28 +661,6 @@ export default function CompatibilityPage() {
                   </div>
 
                   <LocalTimeInfoBox />
-
-                  <div style={{ margin: '1rem 0' }}>
-                    <button
-                      type="button"
-                      className="btn-secondary"
-                      onClick={() => {
-                        setUseCustomDate(true)
-                        const parts = ceoInfo.ceo_birth_date.split('-')
-                        setManualCeo({
-                          company_name: ceoInfo.company_name || '',
-                          ceo_name: ceoInfo.ceo_name || '',
-                          year: parts[0] || '',
-                          month: parts[1] || '',
-                          day: parts[2] || '',
-                          birth_hour: '모름',
-                        })
-                        setError(null)
-                      }}
-                    >
-                      {t('compatibility.ceoWrongBtn')}
-                    </button>
-                  </div>
                 </>
               ) : (
                 <>

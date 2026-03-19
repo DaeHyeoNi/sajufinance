@@ -888,6 +888,33 @@ textarea { resize: vertical; }
   margin-left: 0.25rem;
 }
 
+/* 생년월일 행 — 값 + 수정 버튼 세로 배치 */
+.ceo-info-row--birth {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
+.ceo-info-row--birth .ceo-info-value {
+  margin-bottom: 0.1rem;
+}
+
+.btn-edit-birth {
+  background: none;
+  border: 1px dashed var(--color-accent, #b8860b);
+  color: var(--color-accent, #b8860b);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.7rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-edit-birth:hover {
+  background: var(--color-accent, #b8860b);
+  color: #fff;
+}
+
 /* 현지 시간 안내 박스 */
 .local-time-infobox {
   background: #fffbf0;

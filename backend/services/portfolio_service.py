@@ -5,9 +5,9 @@ from schemas import PortfolioItem
 from services.gemini_service import parse_portfolio_text
 
 
-def parse_portfolio(raw_text: str, additional_cash: float | None) -> tuple[list[PortfolioItem], list[str]]:
+def parse_portfolio(raw_text: str, additional_cash: float | None, api_key: str | None = None) -> tuple[list[PortfolioItem], list[str]]:
     """자유형식 텍스트를 파싱하여 PortfolioItem 목록과 누락 필드 목록을 반환."""
-    raw_items = parse_portfolio_text(raw_text)
+    raw_items = parse_portfolio_text(raw_text, api_key=api_key)
 
     items: list[PortfolioItem] = []
     missing: list[str] = []

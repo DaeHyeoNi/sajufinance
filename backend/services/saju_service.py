@@ -48,6 +48,7 @@ def get_or_create_saju(
     db: Session,
     birth_year: int, birth_month: int, birth_day: int,
     birth_hour: str | None, gender: str,
+    api_key: str | None = None,
 ) -> SajuCache:
     """캐시에서 사주 결과를 가져오거나, 없으면 계산 후 저장."""
     birth_date = date(birth_year, birth_month, birth_day)
@@ -75,7 +76,7 @@ def get_or_create_saju(
 
     # 캐시 미스 → 계산 + Gemini 풀이
     pillars = _compute_pillars(birth_year, birth_month, birth_day, birth_hour, gender)
-    reading = generate_saju_reading(pillars, gender, birth_hour)
+    reading = generate_saju_reading(pillars, gender, birth_hour, api_key=api_key)
 
     entry = SajuCache(
         birth_date=birth_date,

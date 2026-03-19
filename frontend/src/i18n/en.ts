@@ -239,6 +239,24 @@ const en = {
     recCaution: 'Caution',
   },
 
+  apiKey: {
+    navBtn: 'API Key',
+    modalTitle: 'Set Gemini API Key',
+    introBannerTitle: 'Free tier usage limit reached?',
+    introBannerDesc: 'This service runs on a free tier. If the quota is exhausted, responses may slow down or fail. You can set your own Gemini API key to use your personal quota.',
+    introBannerBtn: 'Set API Key',
+    inputLabel: 'Gemini API Key',
+    inputPlaceholder: 'AIza...',
+    warningTitle: 'Security Notice',
+    warning1: 'Your key is stored only in the browser session and is deleted automatically when you close the tab.',
+    warning2: 'Your key may appear in server infrastructure logs. The operator will not use it, but we strongly recommend revoking the key after use.',
+    warning3: 'Issue & revoke keys at: ',
+    warningLink: 'Google AI Studio',
+    saveBtn: 'Save',
+    clearBtn: 'Remove Key',
+    savedBadge: 'Using your key',
+  },
+
   siju: {
     unknown: 'Unknown',
     ja: 'Ja-si · Rat (23:30–01:30)',

@@ -9,6 +9,7 @@ import RebalancingReportPage from './components/RebalancingReportPage'
 import IntroPage from './components/IntroPage'
 import CompatibilityPage from './components/CompatibilityPage'
 import LangToggle from './components/LangToggle'
+import ApiKeyModal, { getStoredApiKey } from './components/ApiKeyModal'
 import { usePageMeta } from './hooks/usePageMeta'
 import './App.css'
 
@@ -22,6 +23,8 @@ function WizardApp() {
   const [sajuData, setSajuData] = useState<SajuAnalyzeResponse | null>(null)
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([])
   const [result, setResult] = useState<RebalanceResponse | null>(null)
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false)
+  const hasApiKey = !!getStoredApiKey()
 
   const handleSajuComplete = (data: SajuAnalyzeResponse) => {
     setSajuData(data)
@@ -45,7 +48,16 @@ function WizardApp() {
     <div className="app">
       <header className="app-header">
         <button className="btn-back" onClick={() => navigate('/')}>{t('common.back')}</button>
-        <LangToggle />
+        <div className="header-nav-right">
+          <button
+            className={`btn-api-key ${hasApiKey ? 'active' : ''}`}
+            onClick={() => setShowApiKeyModal(true)}
+            title={t('apiKey.navBtn')}
+          >
+            🔑 {hasApiKey ? t('apiKey.savedBadge') : t('apiKey.navBtn')}
+          </button>
+          <LangToggle />
+        </div>
         <h1>{t('wizard.title')}</h1>
         <p>{t('wizard.subtitle')}</p>
         <div className="step-indicator">
@@ -56,6 +68,8 @@ function WizardApp() {
           ))}
         </div>
       </header>
+
+      <ApiKeyModal isOpen={showApiKeyModal} onClose={() => setShowApiKeyModal(false)} />
 
       <main className="app-main">
         {step === 1 && <Step1SajuInput onComplete={handleSajuComplete} />}

@@ -1,6 +1,6 @@
 import json
 import uuid as uuid_module
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
@@ -37,7 +37,11 @@ def _save_report(
 
 
 @router.post("/analyze", response_model=RebalanceResponse)
-def analyze_rebalance(req: RebalanceRequest, db: Session = Depends(get_db)):
+def analyze_rebalance(
+    req: RebalanceRequest,
+    x_gemini_api_key: str | None = Header(None),
+    db: Session = Depends(get_db),
+):
     entry: SajuCache | None = db.query(SajuCache).filter(SajuCache.id == req.saju_id).first()
     if not entry:
         raise HTTPException(status_code=404, detail="사주 데이터를 찾을 수 없습니다. 먼저 사주를 분석해 주세요.")
@@ -50,6 +54,7 @@ def analyze_rebalance(req: RebalanceRequest, db: Session = Depends(get_db)):
             portfolio_items=portfolio_dicts,
             additional_cash=req.additional_cash,
             user_preference=req.user_preference,
+            api_key=x_gemini_api_key,
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -66,7 +71,11 @@ def analyze_rebalance(req: RebalanceRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/stream")
-async def stream_rebalance(req: RebalanceRequest, db: Session = Depends(get_db)):
+async def stream_rebalance(
+    req: RebalanceRequest,
+    x_gemini_api_key: str | None = Header(None),
+    db: Session = Depends(get_db),
+):
     """SSE 스트리밍: 생성 중 chunk 이벤트, 완료 시 done 이벤트를 반환."""
     entry: SajuCache | None = db.query(SajuCache).filter(SajuCache.id == req.saju_id).first()
     if not entry:
@@ -81,6 +90,7 @@ async def stream_rebalance(req: RebalanceRequest, db: Session = Depends(get_db))
                 portfolio_items=portfolio_dicts,
                 additional_cash=req.additional_cash,
                 user_preference=req.user_preference,
+                api_key=x_gemini_api_key,
             ):
                 if event_type == "chunk":
                     yield f"data: {json.dumps({'type': 'chunk', 'text': data}, ensure_ascii=False)}\n\n"

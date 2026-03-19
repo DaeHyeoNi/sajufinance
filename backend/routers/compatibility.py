@@ -5,7 +5,7 @@ import json
 import os
 from functools import lru_cache
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -104,7 +104,9 @@ def lookup_ceo(req: CeoLookupRequest, db: Session = Depends(get_db)) -> CeoLooku
 
 @router.post("/analyze", response_model=CompatibilityResponse)
 def analyze_compatibility(
-    req: CompatibilityRequest, db: Session = Depends(get_db)
+    req: CompatibilityRequest,
+    x_gemini_api_key: str | None = Header(None),
+    db: Session = Depends(get_db),
 ) -> CompatibilityResponse:
     """투자자 사주와 CEO 사주 궁합을 분석합니다.
 
@@ -200,6 +202,7 @@ def analyze_compatibility(
             company_name=company_name,
             ticker=ticker_upper,
             ceo_birth_hour=ceo_birth_hour,
+            api_key=x_gemini_api_key,
         )
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"궁합 분석 실패: {exc}")

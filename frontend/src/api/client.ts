@@ -1,3 +1,4 @@
+import { getStoredApiKey } from '../components/ApiKeyModal'
 import type {
   SajuAnalyzeRequest, SajuAnalyzeResponse,
   PortfolioParseRequest, PortfolioParseResponse,
@@ -8,10 +9,17 @@ import type {
   CeoReportRequest,
 } from '../types'
 
+function apiHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  const key = getStoredApiKey()
+  if (key) headers['X-Gemini-Api-Key'] = key
+  return headers
+}
+
 async function post<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(path, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: apiHeaders(),
     body: JSON.stringify(body),
   })
   if (!res.ok) {
@@ -29,7 +37,7 @@ export type StreamEvent =
 async function* streamRebalance(req: RebalanceRequest): AsyncGenerator<StreamEvent> {
   const res = await fetch('/api/rebalance/stream', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: apiHeaders(),
     body: JSON.stringify(req),
   })
   if (!res.ok) {

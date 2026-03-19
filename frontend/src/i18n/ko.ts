@@ -218,6 +218,24 @@ const ko = {
     recCaution: '주의',
   },
 
+  apiKey: {
+    navBtn: 'API 키 설정',
+    modalTitle: 'Gemini API 키 설정',
+    introBannerTitle: '무료 티어 사용량 초과 시',
+    introBannerDesc: '서비스가 무료 티어로 운영되어 사용량 한도에 도달하면 응답이 느려지거나 오류가 발생할 수 있습니다. 본인의 Gemini API 키를 설정하면 직접 할당량으로 이용할 수 있습니다.',
+    introBannerBtn: 'API 키 설정하기',
+    inputLabel: 'Gemini API 키',
+    inputPlaceholder: 'AIza...',
+    warningTitle: '보안 주의사항',
+    warning1: '이 키는 브라우저 세션에만 저장되며 탭을 닫으면 자동 삭제됩니다.',
+    warning2: '서버 인프라 로그에 키가 남을 수 있습니다. 서비스 운영자는 이를 사용하지 않겠지만, 사용 후에는 반드시 키를 revoke(폐기)하시길 권장합니다.',
+    warning3: '키 발급 및 폐기: ',
+    warningLink: 'Google AI Studio',
+    saveBtn: '저장',
+    clearBtn: '키 삭제',
+    savedBadge: '사용자 키 사용 중',
+  },
+
   siju: {
     unknown: '모름',
     ja: '자시 (23:30 ~ 01:30)',

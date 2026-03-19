@@ -13,18 +13,20 @@ _client: genai.Client | None = None
 _MODEL = "gemini-3.1-flash-lite-preview"
 
 
-def _get_client() -> genai.Client:
+def _get_client(api_key: str | None = None) -> genai.Client:
+    if api_key:
+        return genai.Client(api_key=api_key)
     global _client
     if _client is None:
-        api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-        if not api_key:
+        env_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+        if not env_key:
             raise RuntimeError("GEMINI_API_KEY 환경변수가 설정되지 않았습니다.")
-        _client = genai.Client(api_key=api_key)
+        _client = genai.Client(api_key=env_key)
     return _client
 
 
-def _call(prompt: str) -> str:
-    response = _get_client().models.generate_content(model=_MODEL, contents=prompt)
+def _call(prompt: str, api_key: str | None = None) -> str:
+    response = _get_client(api_key).models.generate_content(model=_MODEL, contents=prompt)
     return response.text
 
 
@@ -46,7 +48,7 @@ _SIJU_LABEL: dict[str, str] = {
 
 # ── 1. 사주 풀이 ──────────────────────────────────────────────────────────────
 
-def generate_saju_reading(pillars: dict[str, Any], gender: str, birth_hour: str | None = None) -> str:
+def generate_saju_reading(pillars: dict[str, Any], gender: str, birth_hour: str | None = None, api_key: str | None = None) -> str:
     """사주 팔자 데이터를 바탕으로 Gemini가 풀이 텍스트를 생성."""
     today = date.today().strftime("%Y년 %m월 %d일")
     hour_str = _SIJU_LABEL.get(birth_hour, "미상") if birth_hour else "미상"
@@ -68,12 +70,12 @@ def generate_saju_reading(pillars: dict[str, Any], gender: str, birth_hour: str 
 
 풀이 작성 시 출생 시각을 언급할 때는 "{hour_str}" 형식으로 표기하세요. "18:00" 같은 시각 숫자 형식은 사용하지 마세요.
 풀이는 한국어로 작성하고, 투자 성향 분석에 특히 집중해 주세요."""
-    return _call(prompt)
+    return _call(prompt, api_key)
 
 
 # ── 2. 포트폴리오 텍스트 파싱 ─────────────────────────────────────────────────
 
-def parse_portfolio_text(raw_text: str) -> list[dict[str, Any]]:
+def parse_portfolio_text(raw_text: str, api_key: str | None = None) -> list[dict[str, Any]]:
     """자유형식 포트폴리오 텍스트를 구조화된 JSON 배열로 변환.
 
     반환 형식 (항목당):
@@ -116,7 +118,7 @@ def parse_portfolio_text(raw_text: str) -> list[dict[str, Any]]:
   - KRW 종목이면: quantity × current_price(KRW) 로 계산하세요.
   - 텍스트에 이미 평가금액이 원화로 명시된 경우 그 값을 사용하고, 달러로 명시된 경우 × 1400 환산하세요.
 - 텍스트에서 읽을 수 없는 필드는 null로 표기하세요."""
-    result = _call(prompt)
+    result = _call(prompt, api_key)
     return _extract_json(result)
 
 
@@ -174,10 +176,11 @@ def generate_rebalancing(
     portfolio_items: list[dict[str, Any]],
     additional_cash: float | None,
     user_preference: str,
+    api_key: str | None = None,
 ) -> dict[str, Any]:
     """사주풀이 + 포트폴리오 + 사용자 선호를 통합하여 리밸런싱 결과를 생성."""
     prompt = _build_rebalancing_prompt(saju_reading, portfolio_items, additional_cash, user_preference)
-    result = _call(prompt)
+    result = _call(prompt, api_key)
     return _extract_json(result)
 
 
@@ -186,11 +189,12 @@ async def stream_rebalancing(
     portfolio_items: list[dict[str, Any]],
     additional_cash: float | None,
     user_preference: str,
+    api_key: str | None = None,
 ):
     """Gemini 스트리밍: ('chunk', 텍스트) 를 yield하다가 마지막에 ('done', 파싱된 dict) yield."""
     prompt = _build_rebalancing_prompt(saju_reading, portfolio_items, additional_cash, user_preference)
     collected: list[str] = []
-    response_stream = await _get_client().aio.models.generate_content_stream(model=_MODEL, contents=prompt)
+    response_stream = await _get_client(api_key).aio.models.generate_content_stream(model=_MODEL, contents=prompt)
     async for chunk in response_stream:
         if chunk.text:
             collected.append(chunk.text)
@@ -208,6 +212,7 @@ def generate_saju_compatibility(
     company_name: str,
     ticker: str,
     ceo_birth_hour: str | None = None,
+    api_key: str | None = None,
 ) -> dict[str, Any]:
     """사용자 사주 + CEO 사주 궁합 분석.
 
@@ -277,5 +282,5 @@ CEO: {ceo_name}
 점수 기준: 90~100 매우 좋음, 70~89 좋음, 50~69 보통, 30~49 미흡, 1~29 부적합.
 주의: 오늘 날짜({today}) 기준 정보만 사용하세요. 추측이나 창작 금지."""
 
-    result = _call(prompt)
+    result = _call(prompt, api_key)
     return _extract_json(result)

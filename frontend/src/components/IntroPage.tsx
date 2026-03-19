@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import LangToggle from './LangToggle'
+import ApiKeyModal from './ApiKeyModal'
 import { FourPillarsInfoBox } from './FourPillarsTooltip'
 import { usePageMeta } from '../hooks/usePageMeta'
 
@@ -8,9 +10,11 @@ export default function IntroPage() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   usePageMeta('사주재무연구소', 'Four Pillars Finance Lab')
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false)
 
   return (
     <div className="intro-page" style={{ position: 'relative' }}>
+      <ApiKeyModal isOpen={showApiKeyModal} onClose={() => setShowApiKeyModal(false)} />
       <LangToggle />
 
       <div className="intro-header">
@@ -46,6 +50,16 @@ export default function IntroPage() {
             {t('intro.compatibility.btn')}
           </button>
         </div>
+      </div>
+
+      <div className="api-key-banner">
+        <div className="api-key-banner-content">
+          <span className="api-key-banner-title">🔑 {t('apiKey.introBannerTitle')}</span>
+          <span className="api-key-banner-desc">{t('apiKey.introBannerDesc')}</span>
+        </div>
+        <button className="btn-secondary api-key-banner-btn" onClick={() => setShowApiKeyModal(true)}>
+          {t('apiKey.introBannerBtn')}
+        </button>
       </div>
 
       <p className="intro-disclaimer">{t('intro.disclaimer')}</p>

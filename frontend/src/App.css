@@ -87,6 +87,23 @@ textarea { resize: vertical; }
 .form-section { margin-bottom: 1.4rem; }
 .form-section label { display: block; margin-bottom: 0.4rem; }
 
+/* ── Back Button ──────────────────────────────────────────────────────────── */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.75rem;
+  background: transparent;
+  color: #9e8a78;
+  border: 1px solid #d0c4b8;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+  transition: all 0.15s;
+}
+.btn-back:hover { background: #f5ede6; color: #5c3317; border-color: #c8956a; }
+
 /* ── Buttons ──────────────────────────────────────────────────────────────── */
 .btn-primary {
   padding: 0.7rem 2rem;

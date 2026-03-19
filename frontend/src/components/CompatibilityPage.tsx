@@ -335,6 +335,7 @@ export default function CompatibilityPage() {
     <div className="compatibility-page">
       <div className="app">
         <header className="app-header">
+          <button className="btn-back" onClick={() => navigate('/')}>← 홈</button>
           <h1>주식 사주 궁합</h1>
           <p>내 사주와 기업 CEO의 사주 궁합으로 투자 적합도를 분석합니다</p>
         </header>

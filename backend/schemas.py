@@ -107,13 +107,18 @@ class CompatibilityRequest(BaseModel):
 
 # ── 궁합: 분석 결과 ────────────────────────────────────────
 
+class TermScore(BaseModel):
+    score: int   # 1~100
+    recommendation: str  # "매수" | "관망" | "주의"
+
 class CompatibilityResponse(BaseModel):
     ticker: str
     company_name: str
     ceo_name: str
     ceo_birth_date: str
-    compatibility_score: int   # 1~5 (★ 개수)
-    recommendation: str        # "매수" | "관망" | "주의"
+    short_term: TermScore
+    mid_term: TermScore
+    long_term: TermScore
     reading: str               # 궁합 풀이 (마크다운)
 
 

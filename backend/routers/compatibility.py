@@ -15,6 +15,7 @@ from schemas import (
     CeoLookupResponse,
     CompatibilityRequest,
     CompatibilityResponse,
+    TermScore,
     CeoReportRequest,
 )
 from services.ceo_search_service import get_or_search_ceo
@@ -212,8 +213,9 @@ def analyze_compatibility(
         company_name=company_name,
         ceo_name=ceo_name,
         ceo_birth_date=ceo_birth_date_str,
-        compatibility_score=int(result["compatibility_score"]),
-        recommendation=result["recommendation"],
+        short_term=TermScore(**result["short_term"]),
+        mid_term=TermScore(**result["mid_term"]),
+        long_term=TermScore(**result["long_term"]),
         reading=result["reading"],
     )
 

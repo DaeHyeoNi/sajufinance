@@ -98,13 +98,19 @@ export interface CompatibilityRequest {
 }
 
 // ── 궁합: 분석 결과 ───────────────────────────────────────
+export interface TermScore {
+  score: number
+  recommendation: '매수' | '관망' | '주의'
+}
+
 export interface CompatibilityResponse {
   ticker: string
   company_name: string
   ceo_name: string
   ceo_birth_date: string
-  compatibility_score: number  // 1~5
-  recommendation: '매수' | '관망' | '주의'
+  short_term: TermScore
+  mid_term: TermScore
+  long_term: TermScore
   reading: string  // 마크다운
 }
 

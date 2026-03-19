@@ -795,9 +795,21 @@ export default function CompatibilityPage() {
 
               <div className="compat-score-section">
                 <p className="compat-score-label">{t('compatibility.scoreLabel')}</p>
-                <ScoreDisplay score={result.compatibility_score} />
-                <div style={{ marginTop: '1rem' }}>
-                  <RecommendationBadge rec={result.recommendation} />
+                <div className="compat-term-grid">
+                  {([
+                    { key: 'short_term', labelKey: 'termShort', descKey: 'termShortDesc' },
+                    { key: 'mid_term',   labelKey: 'termMid',   descKey: 'termMidDesc'   },
+                    { key: 'long_term',  labelKey: 'termLong',  descKey: 'termLongDesc'  },
+                  ] as const).map(({ key, labelKey, descKey }) => (
+                    <div className="compat-term-card" key={key}>
+                      <span className="compat-term-label">{t(`compatibility.${labelKey}`)}</span>
+                      <span className="compat-term-desc">{t(`compatibility.${descKey}`)}</span>
+                      <ScoreDisplay score={result[key].score} />
+                      <div style={{ marginTop: '0.6rem' }}>
+                        <RecommendationBadge rec={result[key].recommendation} />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 

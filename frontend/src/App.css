@@ -724,7 +724,7 @@ textarea { resize: vertical; }
   padding: 1rem;
 }
 .modal-box {
-  background: var(--color-surface);
+  background: var(--color-bg-card, #fffcf8);
   border-radius: 16px;
   padding: 1.75rem;
   width: 100%;
@@ -775,6 +775,10 @@ textarea { resize: vertical; }
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+/* header-nav-right 안의 LangToggle은 absolute 해제 */
+.header-nav-right .lang-toggle-btn {
+  position: static;
 }
 .btn-api-key {
   font-size: 0.78rem;

@@ -8,6 +8,7 @@ import type {
   CompatibilityResponse,
 } from '../types'
 import LangToggle from './LangToggle'
+import ApiKeyModal, { getStoredApiKey } from './ApiKeyModal'
 import { usePageMeta } from '../hooks/usePageMeta'
 
 type PageStep = 'input' | 'ceo-confirm' | 'result'
@@ -203,6 +204,8 @@ export default function CompatibilityPage() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   usePageMeta('주식 사주 궁합', 'Stock Compatibility')
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false)
+  const hasApiKey = !!getStoredApiKey()
   const [step, setStep] = useState<PageStep>('input')
   const [ceoInfo, setCeoInfo] = useState<CeoLookupResponse | null>(null)
   const [useCustomDate, setUseCustomDate] = useState(false)
@@ -403,10 +406,19 @@ export default function CompatibilityPage() {
 
   return (
     <div className="compatibility-page">
+      <ApiKeyModal isOpen={showApiKeyModal} onClose={() => setShowApiKeyModal(false)} />
       <div className="app">
         <header className="app-header">
           <button className="btn-back" onClick={() => navigate('/')}>{t('common.back')}</button>
-          <LangToggle />
+          <div className="header-nav-right">
+            <button
+              className={`btn-api-key ${hasApiKey ? 'active' : ''}`}
+              onClick={() => setShowApiKeyModal(true)}
+            >
+              🔑 {hasApiKey ? t('apiKey.savedBadge') : t('apiKey.navBtn')}
+            </button>
+            <LangToggle />
+          </div>
           <h1>🔮 {t('compatibility.pageTitle')}</h1>
           <p>{t('compatibility.pageSubtitle')}</p>
         </header>

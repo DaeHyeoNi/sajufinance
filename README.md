@@ -2,6 +2,14 @@
 
 사주 명리학과 AI를 결합한 투자 분석 웹 애플리케이션입니다.
 
+🌐 **Live Demo**: [saju.daehyeoni.dev](https://saju.daehyeoni.dev)
+
+## 미리보기
+
+| 홈 | 사주 리밸런서 | 주식 사주 궁합 |
+|:---:|:---:|:---:|
+| ![홈](docs/images/intro.png) | ![리밸런서](docs/images/rebalancer.png) | ![궁합](docs/images/compatibility.png) |
+
 ---
 
 ## 주요 기능

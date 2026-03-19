@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
+import { useTranslation } from 'react-i18next'
 import type { SajuAnalyzeResponse, RebalanceResponse, PortfolioItem } from '../types'
 
 // CommonMark 스펙상 )**한글 패턴에서 닫는 ** 가 right-flanking으로 인식 안 되는 버그 수정.
@@ -16,16 +17,19 @@ interface Props {
   onReset: () => void
 }
 
-
-function displayAction(name: string, action: string): string {
+function displayAction(name: string, action: string, t: (key: string) => string): string {
   if (name === '현금') {
-    if (action === '매수') return '비중확대'
-    if (action === '매도') return '비중축소'
+    if (action === '매수') return t('step3.actionIncrease')
+    if (action === '매도') return t('step3.actionDecrease')
   }
+  if (action === '매수') return t('step3.actionBuy')
+  if (action === '매도') return t('step3.actionSell')
+  if (action === '유지') return t('step3.actionHold')
   return action
 }
 
 export default function Step3Results({ sajuData, result, portfolioItems, reportUuid, onReset }: Props) {
+  const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
   const shareUrl = reportUuid ? `${window.location.origin}/rebalancing-report/${reportUuid}` : null
 
@@ -36,6 +40,7 @@ export default function Step3Results({ sajuData, result, portfolioItems, reportU
       setTimeout(() => setCopied(false), 2000)
     })
   }
+
   const totalBuy = result.rebalance_table
     .filter(r => r.action === '매수' && r.name !== '현금')
     .reduce((s, r) => s + r.amount, 0)
@@ -50,24 +55,28 @@ export default function Step3Results({ sajuData, result, portfolioItems, reportU
   const quantityMap = new Map(portfolioItems.map(i => [i.name, i.quantity ?? null]))
   const currentValueMap = new Map(portfolioItems.map(i => [i.name, i.current_value]))
 
+  const pillarKeys = ['year_pillar', 'month_pillar', 'day_pillar', 'hour_pillar'] as const
+  const pillarLabels: Record<string, string> = {
+    year_pillar: t('step3.pillarYear'),
+    month_pillar: t('step3.pillarMonth'),
+    day_pillar: t('step3.pillarDay'),
+    hour_pillar: t('step3.pillarHour'),
+  }
+
   return (
     <div className="step-container">
-      <h2>분석 결과</h2>
+      <h2>{t('step3.title')}</h2>
 
       {/* 사주 풀이 */}
       <section className="result-section">
-        <h3>사주 풀이</h3>
+        <h3>{t('step3.sajuReading')}</h3>
         <div className="pillars">
-          {(['year_pillar', 'month_pillar', 'day_pillar', 'hour_pillar'] as const).map(key => {
+          {pillarKeys.map(key => {
             const val = sajuData.pillars[key]
             if (!val) return null
-            const labels: Record<string, string> = {
-              year_pillar: '년', month_pillar: '월',
-              day_pillar: '일', hour_pillar: '시',
-            }
             return (
               <div key={key} className="pillar-card">
-                <span className="pillar-label">{labels[key]}주</span>
+                <span className="pillar-label">{pillarLabels[key]}{t('step3.pillarSuffix')}</span>
                 <span className="pillar-value">{String(val)}</span>
               </div>
             )
@@ -80,23 +89,23 @@ export default function Step3Results({ sajuData, result, portfolioItems, reportU
 
       {/* 리밸런싱 요약 */}
       <section className="result-section">
-        <h3>리밸런싱 요약</h3>
+        <h3>{t('step3.rebalanceSummary')}</h3>
         <div className="summary-badges">
-          <span className="badge buy">매수 총액 {totalBuy.toLocaleString()}원</span>
-          <span className="badge sell">매도 총액 {totalSell.toLocaleString()}원</span>
+          <span className="badge buy">{t('step3.totalBuy')} {totalBuy.toLocaleString()}{t('step3.currency')}</span>
+          <span className="badge sell">{t('step3.totalSell')} {totalSell.toLocaleString()}{t('step3.currency')}</span>
         </div>
 
         <div className="table-scroll">
           <table className="rebalance-table">
             <thead>
               <tr>
-                <th>종목</th>
-                <th>액션</th>
-                <th>거래 주수</th>
-                <th>거래금액</th>
-                <th>변경 전 비중</th>
-                <th>변경 후 비중</th>
-                <th>이유</th>
+                <th>{t('step3.tableStock')}</th>
+                <th>{t('step3.tableAction')}</th>
+                <th>{t('step3.tableTradeQty')}</th>
+                <th>{t('step3.tableAmount')}</th>
+                <th>{t('step3.tableBeforePct')}</th>
+                <th>{t('step3.tableAfterPct')}</th>
+                <th>{t('step3.tableReason')}</th>
               </tr>
             </thead>
             <tbody>
@@ -115,10 +124,12 @@ export default function Step3Results({ sajuData, result, portfolioItems, reportU
                 const afterPct = totalTargetValue > 0
                   ? (row.target_value / totalTargetValue * 100).toFixed(1)
                   : '-'
-                const label = displayAction(row.name, row.action)
+                const label = displayAction(row.name, row.action, t)
 
-                const badgeCls = label === '매수' || label === '비중확대' ? 'buy'
-                  : label === '매도' || label === '비중축소' ? 'sell'
+                const buyLabels = [t('step3.actionBuy'), t('step3.actionIncrease')]
+                const sellLabels = [t('step3.actionSell'), t('step3.actionDecrease')]
+                const badgeCls = buyLabels.includes(label) ? 'buy'
+                  : sellLabels.includes(label) ? 'sell'
                   : 'hold'
 
                 return (
@@ -127,8 +138,8 @@ export default function Step3Results({ sajuData, result, portfolioItems, reportU
                     <td>
                       <span className={`action-badge ${badgeCls}`}>{label}</span>
                     </td>
-                    <td>{tradeQty != null ? `${tradeQty}주` : '-'}</td>
-                    <td>{row.amount.toLocaleString()}원</td>
+                    <td>{tradeQty != null ? `${tradeQty}${t('step3.tradeQtySuffix')}` : '-'}</td>
+                    <td>{row.amount.toLocaleString()}{t('step3.currency')}</td>
                     <td>{beforePct !== '-' ? `${beforePct}%` : '-'}</td>
                     <td>{afterPct !== '-' ? `${afterPct}%` : '-'}</td>
                     <td className="reason-cell">{row.reason}</td>
@@ -142,7 +153,7 @@ export default function Step3Results({ sajuData, result, portfolioItems, reportU
 
       {/* 종합 해설 */}
       <section className="result-section">
-        <h3>종합 해설</h3>
+        <h3>{t('step3.narrative')}</h3>
         <div className="narrative-text">
           <ReactMarkdown>{fixBold(result.narrative)}</ReactMarkdown>
         </div>
@@ -150,19 +161,19 @@ export default function Step3Results({ sajuData, result, portfolioItems, reportU
 
       {shareUrl && (
         <section className="result-section share-section">
-          <h3>결과 공유</h3>
-          <p className="hint">아래 URL로 이 분석 결과를 언제든지 다시 볼 수 있습니다.</p>
+          <h3>{t('step3.shareTitle')}</h3>
+          <p className="hint">{t('step3.shareHint')}</p>
           <div className="share-url-row">
             <input className="share-url-input" readOnly value={shareUrl} onClick={e => (e.target as HTMLInputElement).select()} />
             <button className="btn-copy" onClick={handleCopy}>
-              {copied ? '복사됨!' : 'URL 복사'}
+              {copied ? t('step3.copiedBtn') : t('step3.copyBtn')}
             </button>
           </div>
         </section>
       )}
 
       <button className="btn-secondary" onClick={onReset}>
-        처음부터 다시 하기
+        {t('step3.resetBtn')}
       </button>
     </div>
   )

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import type { RebalancingReportData } from '../types'
 import { api } from '../api/client'
 import Step3Results from './Step3Results'
@@ -7,6 +8,7 @@ import Step3Results from './Step3Results'
 export default function RebalancingReportPage() {
   const { uuid } = useParams<{ uuid: string }>()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [report, setReport] = useState<RebalancingReportData | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -15,19 +17,19 @@ export default function RebalancingReportPage() {
     if (!uuid) return
     api.getReport(uuid)
       .then(data => setReport(data))
-      .catch(err => setError(err instanceof Error ? err.message : '리포트를 불러오지 못했습니다.'))
+      .catch(err => setError(err instanceof Error ? err.message : t('step3.reportLoadError')))
       .finally(() => setLoading(false))
-  }, [uuid])
+  }, [uuid, t])
 
   if (loading) {
     return (
       <div className="app">
         <header className="app-header">
-          <h1>사주 포트폴리오 리밸런서</h1>
+          <h1>{t('wizard.title')}</h1>
         </header>
         <main className="app-main">
           <div className="step-container">
-            <p>리포트를 불러오는 중…</p>
+            <p>{t('step3.loadingReport')}</p>
           </div>
         </main>
       </div>
@@ -38,12 +40,12 @@ export default function RebalancingReportPage() {
     return (
       <div className="app">
         <header className="app-header">
-          <h1>사주 포트폴리오 리밸런서</h1>
+          <h1>{t('wizard.title')}</h1>
         </header>
         <main className="app-main">
           <div className="step-container">
-            <p className="error">{error ?? '리포트를 찾을 수 없습니다.'}</p>
-            <button className="btn-secondary" onClick={() => navigate('/')}>홈으로</button>
+            <p className="error">{error ?? t('step3.reportNotFound')}</p>
+            <button className="btn-secondary" onClick={() => navigate('/')}>{t('step3.homeBtn')}</button>
           </div>
         </main>
       </div>
@@ -64,8 +66,8 @@ export default function RebalancingReportPage() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>사주 포트폴리오 리밸런서</h1>
-        <p>저장된 분석 결과 — {new Date(report.created_at).toLocaleDateString('ko-KR')}</p>
+        <h1>{t('wizard.title')}</h1>
+        <p>{t('step3.savedReport')} — {new Date(report.created_at).toLocaleDateString('ko-KR')}</p>
       </header>
       <main className="app-main">
         <Step3Results

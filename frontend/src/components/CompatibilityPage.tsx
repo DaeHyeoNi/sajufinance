@@ -1,32 +1,18 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import ReactMarkdown from 'react-markdown'
 import { api } from '../api/client'
 import type {
   CeoLookupResponse,
   CompatibilityResponse,
 } from '../types'
+import LangToggle from './LangToggle'
 
 type PageStep = 'input' | 'ceo-confirm' | 'result'
 type Market = 'KR' | 'US'
 
 const BIRTH_STORAGE_KEY = 'saju_step1_form'
-
-const SIJU_OPTIONS: { value: string; label: string }[] = [
-  { value: '모름', label: '모름' },
-  { value: '자시', label: '자시 (23:30 ~ 01:30)' },
-  { value: '축시', label: '축시 (01:30 ~ 03:30)' },
-  { value: '인시', label: '인시 (03:30 ~ 05:30)' },
-  { value: '묘시', label: '묘시 (05:30 ~ 07:30)' },
-  { value: '진시', label: '진시 (07:30 ~ 09:30)' },
-  { value: '사시', label: '사시 (09:30 ~ 11:30)' },
-  { value: '오시', label: '오시 (11:30 ~ 13:30)' },
-  { value: '미시', label: '미시 (13:30 ~ 15:30)' },
-  { value: '신시', label: '신시 (15:30 ~ 17:30)' },
-  { value: '유시', label: '유시 (17:30 ~ 19:30)' },
-  { value: '술시', label: '술시 (19:30 ~ 21:30)' },
-  { value: '해시', label: '해시 (21:30 ~ 23:30)' },
-]
 
 interface FormState {
   birth_year: number
@@ -70,11 +56,12 @@ function buildDateString(year: string, month: string, day: string): string {
 }
 
 function ScoreDisplay({ score }: { score: number }) {
+  const { t } = useTranslation()
   const grade =
-    score >= 80 ? '매우 좋음 ✨' :
-    score >= 60 ? '좋음 🌟' :
-    score >= 40 ? '보통 ⚖️' :
-    '부적합 ⚠️'
+    score >= 80 ? t('compatibility.scoreGreat') :
+    score >= 60 ? t('compatibility.scoreGood') :
+    score >= 40 ? t('compatibility.scoreNeutral') :
+    t('compatibility.scorePoor')
   const colorClass =
     score >= 80 ? 'score-great' :
     score >= 60 ? 'score-good' :
@@ -93,25 +80,23 @@ function ScoreDisplay({ score }: { score: number }) {
 }
 
 function RecommendationBadge({ rec }: { rec: '매수' | '관망' | '주의' }) {
+  const { t } = useTranslation()
   const cls = rec === '매수' ? 'buy' : rec === '관망' ? 'watch' : 'caution'
   const emoji = rec === '매수' ? '📈' : rec === '관망' ? '🔭' : '⚠️'
-  return <span className={`recommendation-badge ${cls}`}>{emoji} {rec}</span>
+  const label = rec === '매수' ? t('compatibility.recBuy')
+    : rec === '관망' ? t('compatibility.recWatch')
+    : t('compatibility.recCaution')
+  return <span className={`recommendation-badge ${cls}`}>{emoji} {label}</span>
 }
 
 function LocalTimeInfoBox() {
+  const { t } = useTranslation()
   return (
     <div className="local-time-infobox">
-      <p className="local-time-infobox-title">🌏 현지 시간 기준 입력 안내</p>
-      <p>
-        명리학은 태어난 장소의 현지 시간(Local Time)을 기준으로 사주를 계산합니다.
-      </p>
-      <p style={{ marginTop: '0.4rem' }}>
-        예) 일론 머스크(남아공 출생)의 생년월일·시각은
-        한국 시간이 아닌 남아공 현지 시간 기준으로 입력하세요.
-      </p>
-      <p style={{ marginTop: '0.4rem' }}>
-        시진을 모르는 경우 '모름'을 선택하면 일간(日干) 위주로 분석됩니다.
-      </p>
+      <p className="local-time-infobox-title">{t('compatibility.localTimeTitle')}</p>
+      <p>{t('compatibility.localTimeDesc')}</p>
+      <p style={{ marginTop: '0.4rem' }}>{t('compatibility.localTimeExample')}</p>
+      <p style={{ marginTop: '0.4rem' }}>{t('compatibility.localTimeNoHour')}</p>
     </div>
   )
 }
@@ -123,36 +108,54 @@ function ManualCeoForm({
   value: ManualCeoInfo
   onChange: (v: ManualCeoInfo) => void
 }) {
+  const { t } = useTranslation()
+
+  const SIJU_OPTIONS: { value: string; label: string }[] = [
+    { value: '모름', label: t('siju.unknown') },
+    { value: '자시', label: t('siju.ja') },
+    { value: '축시', label: t('siju.chuk') },
+    { value: '인시', label: t('siju.in') },
+    { value: '묘시', label: t('siju.myo') },
+    { value: '진시', label: t('siju.jin') },
+    { value: '사시', label: t('siju.sa') },
+    { value: '오시', label: t('siju.o') },
+    { value: '미시', label: t('siju.mi') },
+    { value: '신시', label: t('siju.sin') },
+    { value: '유시', label: t('siju.yu') },
+    { value: '술시', label: t('siju.sul') },
+    { value: '해시', label: t('siju.hae') },
+  ]
+
   return (
     <>
       <LocalTimeInfoBox />
 
       <div className="form-row">
-        <label>기업명 (선택)</label>
+        <label>{t('compatibility.manualCompanyLabel')}</label>
         <input
           type="text"
-          placeholder="예: Tesla, Inc."
+          placeholder={t('compatibility.manualCompanyPlaceholder')}
           value={value.company_name}
           onChange={e => onChange({ ...value, company_name: e.target.value })}
         />
       </div>
 
       <div className="form-row">
-        <label>CEO 이름 (선택)</label>
+        <label>{t('compatibility.manualCeoNameLabel')}</label>
         <input
           type="text"
-          placeholder="예: Elon Musk"
+          placeholder={t('compatibility.manualCeoNamePlaceholder')}
           value={value.ceo_name}
           onChange={e => onChange({ ...value, ceo_name: e.target.value })}
         />
       </div>
 
       <div className="form-row">
-        <label>CEO 생년월일 (현지 시간 기준)</label>
+        <label>{t('compatibility.manualBirthLabel')}</label>
         <div className="date-inputs">
           <input
             type="number"
-            placeholder="년 (예: 1971)"
+            placeholder={t('compatibility.manualBirthYear')}
             value={value.year}
             min={1900}
             max={2025}
@@ -160,7 +163,7 @@ function ManualCeoForm({
           />
           <input
             type="number"
-            placeholder="월"
+            placeholder={t('compatibility.manualBirthMonth')}
             value={value.month}
             min={1}
             max={12}
@@ -168,7 +171,7 @@ function ManualCeoForm({
           />
           <input
             type="number"
-            placeholder="일"
+            placeholder={t('compatibility.manualBirthDay')}
             value={value.day}
             min={1}
             max={31}
@@ -178,7 +181,7 @@ function ManualCeoForm({
       </div>
 
       <div className="form-row">
-        <label>CEO 태어난 시 (시진, 선택)</label>
+        <label>{t('compatibility.manualSijuLabel')}</label>
         <select
           value={value.birth_hour}
           onChange={e => onChange({ ...value, birth_hour: e.target.value })}
@@ -189,7 +192,7 @@ function ManualCeoForm({
             </option>
           ))}
         </select>
-        <span className="hint">모르는 경우 '모름' 선택 시 일간(日干) 위주로 분석됩니다.</span>
+        <span className="hint">{t('compatibility.manualSijuHint')}</span>
       </div>
     </>
   )
@@ -197,6 +200,7 @@ function ManualCeoForm({
 
 export default function CompatibilityPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [step, setStep] = useState<PageStep>('input')
   const [ceoInfo, setCeoInfo] = useState<CeoLookupResponse | null>(null)
   const [useCustomDate, setUseCustomDate] = useState(false)
@@ -230,6 +234,22 @@ export default function CompatibilityPage() {
     ticker: '',
   }))
 
+  const SIJU_OPTIONS: { value: string; label: string }[] = [
+    { value: '모름', label: t('siju.unknown') },
+    { value: '자시', label: t('siju.ja') },
+    { value: '축시', label: t('siju.chuk') },
+    { value: '인시', label: t('siju.in') },
+    { value: '묘시', label: t('siju.myo') },
+    { value: '진시', label: t('siju.jin') },
+    { value: '사시', label: t('siju.sa') },
+    { value: '오시', label: t('siju.o') },
+    { value: '미시', label: t('siju.mi') },
+    { value: '신시', label: t('siju.sin') },
+    { value: '유시', label: t('siju.yu') },
+    { value: '술시', label: t('siju.sul') },
+    { value: '해시', label: t('siju.hae') },
+  ]
+
   // 생년월일·시진·성별 변경 시 세션 스토리지에 저장 (Step1과 공유)
   useEffect(() => {
     const { birth_year, birth_month, birth_day, birth_hour, gender } = form
@@ -250,11 +270,11 @@ export default function CompatibilityPage() {
   const handleLookupCeo = async (e: React.FormEvent) => {
     e.preventDefault()
     if (market === 'KR' && !krSelected) {
-      setError('종목을 선택해주세요.')
+      setError(t('compatibility.selectStockError'))
       return
     }
     if (market === 'US' && !form.ticker.trim()) {
-      setError('종목 티커를 입력해주세요.')
+      setError(t('compatibility.tickerRequired'))
       return
     }
     setLoading(true)
@@ -271,7 +291,7 @@ export default function CompatibilityPage() {
       setReportSubmitted(false)
       setStep('ceo-confirm')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'CEO 정보를 불러오지 못했습니다.')
+      setError(err instanceof Error ? err.message : t('compatibility.lookupError'))
     } finally {
       setLoading(false)
     }
@@ -315,13 +335,13 @@ export default function CompatibilityPage() {
   const handleAnalyze = async () => {
     const needsManual = useCustomDate || (ceoInfo && !ceoInfo.found)
     if (needsManual && !manualCeo.year) {
-      setError('CEO 생년을 입력해 주세요.')
+      setError(t('compatibility.ceoEnterYearError'))
       return
     }
 
     const payload = buildAnalyzePayload()
     if (!payload) {
-      setError('CEO 생년을 입력해 주세요.')
+      setError(t('compatibility.ceoEnterYearError'))
       return
     }
 
@@ -332,7 +352,7 @@ export default function CompatibilityPage() {
       setResult(data)
       setStep('result')
     } catch (err) {
-      setError(err instanceof Error ? err.message : '궁합 분석 중 오류가 발생했습니다.')
+      setError(err instanceof Error ? err.message : t('compatibility.analyzeError'))
     } finally {
       setLoading(false)
     }
@@ -374,34 +394,40 @@ export default function CompatibilityPage() {
     setForm(f => ({ ...f, ticker: '' }))
   }
 
+  const genderOptions = [
+    { value: '남', label: t('compatibility.male') },
+    { value: '여', label: t('compatibility.female') },
+  ]
+
   return (
     <div className="compatibility-page">
       <div className="app">
         <header className="app-header">
-          <button className="btn-back" onClick={() => navigate('/')}>← 홈</button>
-          <h1>🔮 주식 사주 궁합</h1>
-          <p>내 사주와 기업 CEO의 사주 궁합으로 투자 적합도를 분석합니다</p>
+          <button className="btn-back" onClick={() => navigate('/')}>{t('common.back')}</button>
+          <LangToggle />
+          <h1>🔮 {t('compatibility.pageTitle')}</h1>
+          <p>{t('compatibility.pageSubtitle')}</p>
         </header>
 
         <main className="app-main">
           {/* ── Step 1: 입력 ── */}
           {step === 'input' && (
             <div className="step-container">
-              <h2>✍️ 사용자 정보 + 종목 입력</h2>
+              <h2>{t('compatibility.inputTitle')}</h2>
               <p className="step-desc">
-                생년월일과 성별을 입력하고, 궁합을 분석할 종목을 선택하세요.<br />
-                <span style={{ color: 'var(--color-accent)', fontWeight: 600 }}>별자리보다 정확한 사주로 투자 적합도를 확인해보세요.</span>
+                {t('compatibility.inputDesc')}<br />
+                <span style={{ color: 'var(--color-accent)', fontWeight: 600 }}>{t('compatibility.inputDescAccent')}</span>
               </p>
 
               <form onSubmit={handleLookupCeo}>
-                <div className="compat-section-label">나의 사주 정보</div>
+                <div className="compat-section-label">{t('compatibility.mySajuLabel')}</div>
 
                 <div className="form-row">
-                  <label>생년월일</label>
+                  <label>{t('compatibility.birthDate')}</label>
                   <div className="date-inputs">
                     <input
                       type="number"
-                      placeholder="년 (예: 1990)"
+                      placeholder={t('compatibility.birthYear')}
                       value={form.birth_year}
                       min={1900}
                       max={2025}
@@ -410,7 +436,7 @@ export default function CompatibilityPage() {
                     />
                     <input
                       type="number"
-                      placeholder="월"
+                      placeholder={t('compatibility.birthMonth')}
                       value={form.birth_month}
                       min={1}
                       max={12}
@@ -419,7 +445,7 @@ export default function CompatibilityPage() {
                     />
                     <input
                       type="number"
-                      placeholder="일"
+                      placeholder={t('compatibility.birthDay')}
                       value={form.birth_day}
                       min={1}
                       max={31}
@@ -430,7 +456,7 @@ export default function CompatibilityPage() {
                 </div>
 
                 <div className="form-row">
-                  <label>태어난 시 (시진)</label>
+                  <label>{t('compatibility.birthHour')}</label>
                   <select
                     value={form.birth_hour ?? '모름'}
                     onChange={e =>
@@ -446,20 +472,20 @@ export default function CompatibilityPage() {
                       </option>
                     ))}
                   </select>
-                  <span className="hint">모를 경우 정확도가 낮아질 수 있습니다.</span>
+                  <span className="hint">{t('compatibility.birthHourHint')}</span>
                 </div>
 
                 <div className="form-row">
-                  <label>성별</label>
+                  <label>{t('compatibility.gender')}</label>
                   <div className="gender-toggle">
-                    {['남', '여'].map(g => (
+                    {genderOptions.map(g => (
                       <button
-                        key={g}
+                        key={g.value}
                         type="button"
-                        className={`gender-btn${form.gender === g ? ' selected' : ''}`}
-                        onClick={() => setForm(f => ({ ...f, gender: g }))}
+                        className={`gender-btn${form.gender === g.value ? ' selected' : ''}`}
+                        onClick={() => setForm(f => ({ ...f, gender: g.value }))}
                       >
-                        {g === '남' ? '♂ 남' : '♀ 여'}
+                        {g.label}
                       </button>
                     ))}
                   </div>
@@ -469,7 +495,7 @@ export default function CompatibilityPage() {
                   <span>☯</span>
                 </div>
 
-                <div className="compat-section-label">분석할 종목</div>
+                <div className="compat-section-label">{t('compatibility.stockLabel')}</div>
 
                 {/* 시장 선택 탭 */}
                 <div className="market-tabs">
@@ -478,25 +504,25 @@ export default function CompatibilityPage() {
                     className={`market-tab ${market === 'KR' ? 'active' : ''}`}
                     onClick={() => { setMarket('KR'); setKrSearch(''); setKrSelected(null); setForm(f => ({ ...f, ticker: '' })) }}
                   >
-                    🇰🇷 한국 주식
+                    {t('compatibility.marketKR')}
                   </button>
                   <button
                     type="button"
                     className={`market-tab ${market === 'US' ? 'active' : ''}`}
                     onClick={() => { setMarket('US'); setKrSearch(''); setKrSelected(null); setForm(f => ({ ...f, ticker: '' })) }}
                   >
-                    🇺🇸 미국 주식
+                    {t('compatibility.marketUS')}
                   </button>
                 </div>
 
                 {/* 한국 주식 — 종목명 검색 */}
                 {market === 'KR' && (
                   <div className="form-row">
-                    <label>종목명 검색</label>
+                    <label>{t('compatibility.krSearchLabel')}</label>
                     <div className="kr-search-wrapper">
                       <input
                         type="text"
-                        placeholder="예: 삼성전자, 카카오, SK하이닉스"
+                        placeholder={t('compatibility.krSearchPlaceholder')}
                         value={krSearch}
                         onChange={async e => {
                           const q = e.target.value
@@ -516,7 +542,7 @@ export default function CompatibilityPage() {
                         }}
                         autoComplete="off"
                       />
-                      {krLoading && <span className="hint">검색 중...</span>}
+                      {krLoading && <span className="hint">{t('common.searching')}</span>}
                       {krSuggestions.length > 0 && !krSelected && (
                         <ul className="kr-suggestions">
                           {krSuggestions.map(s => (
@@ -537,31 +563,31 @@ export default function CompatibilityPage() {
                       )}
                     </div>
                     {krSelected && (
-                      <span className="hint">✓ 선택됨: {krSelected.name} ({krSelected.ticker})</span>
+                      <span className="hint">{t('compatibility.krSelected')} {krSelected.name} ({krSelected.ticker})</span>
                     )}
-                    <span className="hint">종목명을 입력하면 자동완성 목록이 나타납니다.</span>
+                    <span className="hint">{t('compatibility.krSearchHint')}</span>
                   </div>
                 )}
 
                 {/* 미국 주식 — 티커 직접 입력 */}
                 {market === 'US' && (
                   <div className="form-row">
-                    <label>종목 티커</label>
+                    <label>{t('compatibility.tickerLabel')}</label>
                     <input
                       type="text"
-                      placeholder="예: TSLA, AAPL, NVDA"
+                      placeholder={t('compatibility.tickerPlaceholder')}
                       value={form.ticker}
                       onChange={e => setForm(f => ({ ...f, ticker: e.target.value.toUpperCase() }))}
                       required
                     />
-                    <span className="hint">나스닥·뉴욕증권거래소 상장 종목의 영문 티커를 입력하세요.</span>
+                    <span className="hint">{t('compatibility.tickerHint')}</span>
                   </div>
                 )}
 
                 {error && <p className="error">{error}</p>}
 
                 <button type="submit" className="btn-primary" disabled={loading} style={{ width: '100%', marginTop: '0.5rem' }}>
-                  {loading ? '🔍 CEO 정보를 찾는 중…' : '🔮 CEO 찾고 궁합 분석 시작'}
+                  {loading ? t('compatibility.lookupLoadingBtn') : t('compatibility.lookupBtn')}
                 </button>
               </form>
             </div>
@@ -570,27 +596,27 @@ export default function CompatibilityPage() {
           {/* ── Step 2: CEO 확인 ── */}
           {step === 'ceo-confirm' && ceoInfo && (
             <div className="step-container">
-              <h2>👤 CEO 정보 확인</h2>
+              <h2>{t('compatibility.ceoConfirmTitle')}</h2>
 
               {ceoInfo.found && !useCustomDate ? (
                 <>
-                  <p className="step-desc">아래 CEO 정보가 맞는지 확인해 주세요.</p>
+                  <p className="step-desc">{t('compatibility.ceoConfirmDesc')}</p>
 
                   <div className="ceo-confirm-card">
                     <div className="ceo-info-row">
-                      <span className="ceo-info-label">🏢 기업명</span>
+                      <span className="ceo-info-label">{t('compatibility.ceoCompany')}</span>
                       <span className="ceo-info-value">{ceoInfo.company_name}</span>
                     </div>
                     <div className="ceo-info-row">
-                      <span className="ceo-info-label">👤 CEO</span>
+                      <span className="ceo-info-label">{t('compatibility.ceoCeo')}</span>
                       <span className="ceo-info-value">{ceoInfo.ceo_name}</span>
                     </div>
                     <div className="ceo-info-row">
-                      <span className="ceo-info-label">🎂 생년월일</span>
+                      <span className="ceo-info-label">{t('compatibility.ceoBirth')}</span>
                       <span className="ceo-info-value">{ceoInfo.ceo_birth_date}</span>
                     </div>
                     {ceoInfo.from_cache && (
-                      <p className="hint" style={{ marginTop: '0.5rem' }}>💾 캐시된 데이터입니다.</p>
+                      <p className="hint" style={{ marginTop: '0.5rem' }}>{t('compatibility.ceoCached')}</p>
                     )}
                   </div>
 
@@ -606,7 +632,7 @@ export default function CompatibilityPage() {
                         setError(null)
                       }}
                     >
-                      ✏️ 정보가 틀렸어요
+                      {t('compatibility.ceoWrongBtn')}
                     </button>
                   </div>
                 </>
@@ -614,9 +640,9 @@ export default function CompatibilityPage() {
                 <>
                   {!ceoInfo.found && (
                     <div className="warning">
-                      <strong>🔍 CEO 정보를 자동으로 찾지 못했습니다.</strong>
+                      <strong>{t('compatibility.ceoNotFound')}</strong>
                       <p style={{ marginTop: '0.3rem', fontSize: '0.88rem' }}>
-                        아래 폼에 CEO 정보를 직접 입력해 주세요.
+                        {t('compatibility.ceoNotFoundDesc')}
                       </p>
                     </div>
                   )}
@@ -634,7 +660,7 @@ export default function CompatibilityPage() {
                           setError(null)
                         }}
                       >
-                        ↩ 취소 — 원래 정보로 돌아가기
+                        {t('compatibility.ceoCancelBtn')}
                       </button>
                     </div>
                   )}
@@ -651,13 +677,13 @@ export default function CompatibilityPage() {
                   disabled={loading}
                 >
                   {loading
-                    ? '🔮 사주 기운을 읽는 중…'
+                    ? t('compatibility.analyzingBtn')
                     : useCustomDate || !ceoInfo.found
-                    ? '이 정보로 궁합 분석하기'
-                    : '정보가 맞습니다 → 궁합 분석 시작 🔮'}
+                    ? t('compatibility.analyzeBtn')
+                    : t('compatibility.analyzeConfirmBtn')}
                 </button>
                 <button type="button" className="btn-secondary" onClick={handleReset}>
-                  다시 입력
+                  {t('compatibility.reInputBtn')}
                 </button>
               </div>
 
@@ -671,15 +697,15 @@ export default function CompatibilityPage() {
                       style={{ fontSize: '0.85rem', padding: '0.4rem 1rem' }}
                       onClick={() => setShowReportForm(true)}
                     >
-                      🚩 잘못된 데이터 신고하기
+                      {t('compatibility.reportBtn')}
                     </button>
                   )}
 
                   {showReportForm && !reportSubmitted && (
                     <div className="report-form">
-                      <p className="report-form-title">잘못된 데이터 신고</p>
+                      <p className="report-form-title">{t('compatibility.reportTitle')}</p>
                       <div className="form-row">
-                        <label>수정된 생년월일 (선택)</label>
+                        <label>{t('compatibility.reportBirthLabel')}</label>
                         <input
                           type="date"
                           value={reportBirthDate}
@@ -687,10 +713,10 @@ export default function CompatibilityPage() {
                         />
                       </div>
                       <div className="form-row">
-                        <label>메모 (선택)</label>
+                        <label>{t('compatibility.reportNoteLabel')}</label>
                         <textarea
                           rows={3}
-                          placeholder="올바른 정보나 출처를 입력해 주세요"
+                          placeholder={t('compatibility.reportNotePlaceholder')}
                           value={reportNote}
                           onChange={e => setReportNote(e.target.value)}
                         />
@@ -703,7 +729,7 @@ export default function CompatibilityPage() {
                           disabled={reportLoading}
                           style={{ fontSize: '0.9rem', padding: '0.55rem 1.25rem' }}
                         >
-                          {reportLoading ? '제출 중…' : '신고 제출'}
+                          {reportLoading ? t('compatibility.reportSubmittingBtn') : t('compatibility.reportSubmitBtn')}
                         </button>
                         <button
                           type="button"
@@ -711,7 +737,7 @@ export default function CompatibilityPage() {
                           onClick={() => setShowReportForm(false)}
                           style={{ fontSize: '0.9rem', padding: '0.55rem 1.25rem' }}
                         >
-                          취소
+                          {t('compatibility.reportCancelBtn')}
                         </button>
                       </div>
                     </div>
@@ -719,7 +745,7 @@ export default function CompatibilityPage() {
 
                   {reportSubmitted && (
                     <p style={{ color: '#2e7d32', fontSize: '0.9rem', fontWeight: 600 }}>
-                      ✅ 신고가 접수되었습니다. 감사합니다.
+                      {t('compatibility.reportSuccess')}
                     </p>
                   )}
                 </div>
@@ -730,31 +756,31 @@ export default function CompatibilityPage() {
           {/* ── Step 3: 결과 ── */}
           {step === 'result' && result && (
             <div className="step-container">
-              <h2>✨ 궁합 분석 결과</h2>
+              <h2>{t('compatibility.resultTitle')}</h2>
 
               <div className="compat-result-card">
                 <div className="ceo-info-row">
-                  <span className="ceo-info-label">🏢 기업</span>
+                  <span className="ceo-info-label">{t('compatibility.resultCompany')}</span>
                   <span className="ceo-info-value">
                     {result.company_name} ({result.ticker})
                   </span>
                 </div>
                 <div className="ceo-info-row">
-                  <span className="ceo-info-label">👤 CEO</span>
+                  <span className="ceo-info-label">{t('compatibility.resultCeo')}</span>
                   <span className="ceo-info-value">{result.ceo_name}</span>
                 </div>
                 <div className="ceo-info-row">
-                  <span className="ceo-info-label">🎂 CEO 생년월일</span>
+                  <span className="ceo-info-label">{t('compatibility.resultCeoBirth')}</span>
                   <span className="ceo-info-value">{result.ceo_birth_date}</span>
                 </div>
               </div>
 
               <p className="hint" style={{ margin: '0.5rem 0 1rem' }}>
-                * CEO 태어난 시각 불명 시 일간(日干) 위주 분석으로 진행됩니다.
+                {t('compatibility.resultHint')}
               </p>
 
               <div className="compat-score-section">
-                <p className="compat-score-label">사주 궁합 점수</p>
+                <p className="compat-score-label">{t('compatibility.scoreLabel')}</p>
                 <ScoreDisplay score={result.compatibility_score} />
                 <div style={{ marginTop: '1rem' }}>
                   <RecommendationBadge rec={result.recommendation} />
@@ -762,7 +788,7 @@ export default function CompatibilityPage() {
               </div>
 
               <div className="result-section" style={{ marginTop: '1.5rem' }}>
-                <h3>궁합 풀이</h3>
+                <h3>{t('compatibility.readingTitle')}</h3>
                 <div className="reading-text">
                   <ReactMarkdown>{result.reading}</ReactMarkdown>
                 </div>
@@ -770,14 +796,14 @@ export default function CompatibilityPage() {
 
               <div className="btn-group">
                 <button type="button" className="btn-primary" onClick={handleReset}>
-                  🔄 다시 분석하기
+                  {t('compatibility.reAnalyzeBtn')}
                 </button>
                 <button
                   type="button"
                   className="btn-secondary"
                   onClick={() => navigate('/')}
                 >
-                  홈으로
+                  {t('compatibility.homeBtn')}
                 </button>
               </div>
             </div>

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { SajuAnalyzeResponse, PortfolioParseResponse, RebalanceResponse, RebalanceRequest, PortfolioItem } from '../types'
 import { api } from '../api/client'
 
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export default function Step2PortfolioInput({ sajuData, onComplete }: Props) {
+  const { t } = useTranslation()
   const [rawText, setRawText] = useState('')
   const [additionalCash, setAdditionalCash] = useState('')
   const [preference, setPreference] = useState('')
@@ -51,7 +53,7 @@ export default function Step2PortfolioInput({ sajuData, onComplete }: Props) {
       setMissingWarning(result.missing_fields)
       setStep('confirm')
     } catch (err) {
-      setError(err instanceof Error ? err.message : '포트폴리오 파싱에 실패했습니다.')
+      setError(err instanceof Error ? err.message : t('step2.parseError'))
     } finally {
       setLoading(false)
     }
@@ -60,7 +62,7 @@ export default function Step2PortfolioInput({ sajuData, onComplete }: Props) {
   const handleAnalyze = async () => {
     if (!parsedPortfolio) return
     if (!preference.trim()) {
-      setError('운영 방안 / 선호 전략을 입력해 주세요.')
+      setError(t('step2.preferenceRequired'))
       return
     }
     setLoading(true)
@@ -89,7 +91,7 @@ export default function Step2PortfolioInput({ sajuData, onComplete }: Props) {
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '리밸런싱 분석에 실패했습니다.')
+      setError(err instanceof Error ? err.message : t('step2.analyzeError'))
     } finally {
       setLoading(false)
     }
@@ -97,19 +99,19 @@ export default function Step2PortfolioInput({ sajuData, onComplete }: Props) {
 
   return (
     <div className="step-container">
-      <h2>Step 2 — 포트폴리오 & 운영 방안 입력</h2>
+      <h2>{t('step2.title')}</h2>
 
       {step === 'input' && (
         <form onSubmit={handleParsePortfolio}>
           <div className="form-section">
-            <label>현재 포트폴리오</label>
+            <label>{t('step2.portfolioLabel')}</label>
             <p className="hint">
-              보유 자산(종목명, 수량, 매입가, 현재가/수익률 등)을 자유롭게 텍스트로 입력하세요.<br />
-              <strong>현재 평가금액</strong>은 반드시 포함되어야 합니다.
+              {t('step2.portfolioHint')}<br />
+              <strong>{t('step2.portfolioHintRequired')}</strong>
             </p>
             <textarea
               rows={8}
-              placeholder={`예시:\n삼성전자 100주, 매입가 60,000원, 현재가 72,000원\nSK하이닉스 50주, 수익률 +15%, 현재 평가금액 8,500,000원\n애플 10주, 현재가 $185, 현재가치 2,500,000원`}
+              placeholder={t('step2.portfolioPlaceholder')}
               value={rawText}
               onChange={e => setRawText(e.target.value)}
               required
@@ -117,10 +119,10 @@ export default function Step2PortfolioInput({ sajuData, onComplete }: Props) {
           </div>
 
           <div className="form-row">
-            <label>추가 투입 가능 현금 (원, 선택)</label>
+            <label>{t('step2.cashLabel')}</label>
             <input
               type="number"
-              placeholder="예: 1000000 (비워두면 0원으로 가정)"
+              placeholder={t('step2.cashPlaceholder')}
               value={additionalCash}
               min={0}
               onChange={e => setAdditionalCash(e.target.value)}
@@ -130,7 +132,7 @@ export default function Step2PortfolioInput({ sajuData, onComplete }: Props) {
           {error && <p className="error">{error}</p>}
 
           <button type="submit" disabled={loading} className="btn-primary">
-            {loading ? '포트폴리오 파싱 중…' : '포트폴리오 파싱하기'}
+            {loading ? t('step2.parseBtnLoading') : t('step2.parseBtn')}
           </button>
         </form>
       )}
@@ -139,19 +141,23 @@ export default function Step2PortfolioInput({ sajuData, onComplete }: Props) {
         <div>
           {missingWarning.length > 0 && (
             <div className="warning">
-              <strong>누락된 정보가 있습니다:</strong>
+              <strong>{t('step2.missingWarning')}</strong>
               <ul>{missingWarning.map((w, i) => <li key={i}>{w}</li>)}</ul>
-              <p>포트폴리오를 수정하려면 아래 버튼을 누르세요.</p>
+              <p>{t('step2.missingHint')}</p>
             </div>
           )}
 
-          <p className="confirm-section-title">인식된 포트폴리오</p>
+          <p className="confirm-section-title">{t('step2.confirmedTitle')}</p>
           <div className="table-scroll">
           <table className="portfolio-table">
             <thead>
               <tr>
-                <th>종목</th><th>수량</th><th>매입가</th><th>현재가</th>
-                <th>평가금액</th><th>수익률</th>
+                <th>{t('step2.tableStock')}</th>
+                <th>{t('step2.tableQty')}</th>
+                <th>{t('step2.tablePurchase')}</th>
+                <th>{t('step2.tableCurrent')}</th>
+                <th>{t('step2.tableValue')}</th>
+                <th>{t('step2.tableReturn')}</th>
               </tr>
             </thead>
             <tbody>
@@ -165,13 +171,13 @@ export default function Step2PortfolioInput({ sajuData, onComplete }: Props) {
                   <td>{item.current_price != null
                     ? item.currency === 'USD' ? `$${item.current_price.toLocaleString()}` : `${item.current_price.toLocaleString()}원`
                     : '-'}</td>
-                  <td>{item.current_value.toLocaleString()}원{item.currency === 'USD' ? ' (환산)' : ''}</td>
+                  <td>{item.current_value.toLocaleString()}원{item.currency === 'USD' ? t('step2.tableUsdSuffix') : ''}</td>
                   <td>{item.return_rate != null ? `${item.return_rate > 0 ? '+' : ''}${item.return_rate}%` : '-'}</td>
                 </tr>
               ))}
               {/* 현금 행 */}
               <tr className="cash-row">
-                <td>현금</td>
+                <td>{t('step2.tableCashName')}</td>
                 <td>-</td><td>-</td><td>-</td>
                 <td>{numericCash.toLocaleString()}원</td>
                 <td>-</td>
@@ -183,11 +189,11 @@ export default function Step2PortfolioInput({ sajuData, onComplete }: Props) {
           <div className="portfolio-section-divider" />
 
           <div className="form-section" style={{ marginTop: '0' }}>
-            <label>운영 방안 / 투자 선호 전략</label>
-            <p className="hint">어떤 방식으로 포트폴리오를 운영하고 싶은지 자유롭게 입력하세요.</p>
+            <label>{t('step2.preferenceLabel')}</label>
+            <p className="hint">{t('step2.preferenceHint')}</p>
             <textarea
               rows={4}
-              placeholder={`예시:\n- 리스크를 줄이고 안정적인 배당주 비중을 높이고 싶다\n- 성장주 중심으로 공격적으로 운용하고 싶다\n- 반도체 섹터 비중을 줄이고 싶다`}
+              placeholder={t('step2.preferencePlaceholder')}
               value={preference}
               onChange={e => setPreference(e.target.value)}
               required
@@ -199,7 +205,9 @@ export default function Step2PortfolioInput({ sajuData, onComplete }: Props) {
           {/* 스트리밍 미리보기 */}
           {loading && (
             <div className="stream-preview">
-              <p className="stream-label">AI가 분석 중입니다… {streamText ? '(실시간 생성 중)' : '(연결 중…)'}</p>
+              <p className="stream-label">
+                {t('step2.streamLabel')} {streamText ? t('step2.streamGenerating') : t('step2.streamConnecting')}
+              </p>
               {streamText && (
                 <div className="stream-box" ref={streamBoxRef}>
                   {streamText}
@@ -215,7 +223,7 @@ export default function Step2PortfolioInput({ sajuData, onComplete }: Props) {
               disabled={loading}
               onClick={() => { setStep('input'); setParsedPortfolio(null) }}
             >
-              포트폴리오 수정
+              {t('step2.editBtn')}
             </button>
             <button
               type="button"
@@ -223,7 +231,7 @@ export default function Step2PortfolioInput({ sajuData, onComplete }: Props) {
               disabled={loading}
               onClick={handleAnalyze}
             >
-              {loading ? '분석 중…' : '리밸런싱 분석하기'}
+              {loading ? t('step2.analyzingBtn') : t('step2.analyzeBtn')}
             </button>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import type { SajuAnalyzeResponse, RebalanceResponse, PortfolioItem } from './types'
 import Step1SajuInput from './components/Step1SajuInput'
 import Step2PortfolioInput from './components/Step2PortfolioInput'
@@ -7,12 +8,14 @@ import Step3Results from './components/Step3Results'
 import RebalancingReportPage from './components/RebalancingReportPage'
 import IntroPage from './components/IntroPage'
 import CompatibilityPage from './components/CompatibilityPage'
+import LangToggle from './components/LangToggle'
 import './App.css'
 
 type Step = 1 | 2 | 3
 
 function WizardApp() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [step, setStep] = useState<Step>(1)
   const [sajuData, setSajuData] = useState<SajuAnalyzeResponse | null>(null)
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([])
@@ -39,9 +42,10 @@ function WizardApp() {
   return (
     <div className="app">
       <header className="app-header">
-        <button className="btn-back" onClick={() => navigate('/')}>← 홈</button>
-        <h1>사주 포트폴리오 리밸런서</h1>
-        <p>당신의 사주를 기반으로 맞춤형 투자 포트폴리오를 제안합니다</p>
+        <button className="btn-back" onClick={() => navigate('/')}>{t('common.back')}</button>
+        <LangToggle />
+        <h1>{t('wizard.title')}</h1>
+        <p>{t('wizard.subtitle')}</p>
         <div className="step-indicator">
           {([1, 2, 3] as Step[]).map(s => (
             <span key={s} className={`step-dot ${step === s ? 'active' : step > s ? 'done' : ''}`}>

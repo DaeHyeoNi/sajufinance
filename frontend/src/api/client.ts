@@ -86,4 +86,7 @@ export const api = {
 
   reportCeoData: (req: CeoReportRequest) =>
     post<{ ok: boolean }>('/api/compatibility/report', req),
+
+  searchKoreanStocks: (q: string) =>
+    fetch(`/api/compatibility/korean-stocks/search?q=${encodeURIComponent(q)}`).then(r => r.json()) as Promise<{ticker: string, name: string, market: string}[]>,
 }

@@ -8,6 +8,7 @@ import type {
 } from '../types'
 
 type PageStep = 'input' | 'ceo-confirm' | 'result'
+type Market = 'KR' | 'US'
 
 const SIJU_OPTIONS: { value: string; label: string }[] = [
   { value: '모름', label: '모름' },
@@ -188,6 +189,12 @@ export default function CompatibilityPage() {
   const [reportSubmitted, setReportSubmitted] = useState(false)
   const [reportLoading, setReportLoading] = useState(false)
 
+  const [market, setMarket] = useState<Market>('KR')
+  const [krSearch, setKrSearch] = useState('')
+  const [krSuggestions, setKrSuggestions] = useState<{ticker: string, name: string, market: string}[]>([])
+  const [krSelected, setKrSelected] = useState<{ticker: string, name: string} | null>(null)
+  const [krLoading, setKrLoading] = useState(false)
+
   const [form, setForm] = useState<FormState>({
     birth_year: 1990,
     birth_month: 1,
@@ -199,11 +206,21 @@ export default function CompatibilityPage() {
 
   const handleLookupCeo = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.ticker.trim()) return
+    if (market === 'KR' && !krSelected) {
+      setError('종목을 선택해주세요.')
+      return
+    }
+    if (market === 'US' && !form.ticker.trim()) {
+      setError('종목 티커를 입력해주세요.')
+      return
+    }
     setLoading(true)
     setError(null)
     try {
-      const data = await api.lookupCeo({ ticker: form.ticker.trim().toUpperCase() })
+      const data = await api.lookupCeo({
+        ticker: form.ticker.trim().toUpperCase(),
+        company_name: market === 'KR' && krSelected ? krSelected.name : null,
+      })
       setCeoInfo(data)
       setUseCustomDate(!data.found)
       setManualCeo({ company_name: '', ceo_name: '', year: '', month: '', day: '', birth_hour: '모름' })
@@ -308,6 +325,10 @@ export default function CompatibilityPage() {
     setReportSubmitted(false)
     setReportBirthDate('')
     setReportNote('')
+    setKrSearch('')
+    setKrSuggestions([])
+    setKrSelected(null)
+    setForm(f => ({ ...f, ticker: '' }))
   }
 
   return (
@@ -397,19 +418,92 @@ export default function CompatibilityPage() {
                   </div>
                 </div>
 
-                <div className="form-row">
-                  <label>종목 티커</label>
-                  <input
-                    type="text"
-                    placeholder="예: TSLA, AAPL, 005930"
-                    value={form.ticker}
-                    onChange={e => setForm(f => ({ ...f, ticker: e.target.value }))}
-                    required
-                  />
-                  <span className="hint">
-                    미국 주식은 영문 티커 (TSLA), 한국 주식은 종목코드 (005930)
-                  </span>
+                {/* 시장 선택 탭 */}
+                <div className="market-tabs">
+                  <button
+                    type="button"
+                    className={`market-tab ${market === 'KR' ? 'active' : ''}`}
+                    onClick={() => { setMarket('KR'); setKrSearch(''); setKrSelected(null); setForm(f => ({ ...f, ticker: '' })) }}
+                  >
+                    한국 주식
+                  </button>
+                  <button
+                    type="button"
+                    className={`market-tab ${market === 'US' ? 'active' : ''}`}
+                    onClick={() => { setMarket('US'); setKrSearch(''); setKrSelected(null); setForm(f => ({ ...f, ticker: '' })) }}
+                  >
+                    미국 주식
+                  </button>
                 </div>
+
+                {/* 한국 주식 — 종목명 검색 */}
+                {market === 'KR' && (
+                  <div className="form-row">
+                    <label>종목명 검색</label>
+                    <div className="kr-search-wrapper">
+                      <input
+                        type="text"
+                        placeholder="예: 삼성전자, 카카오, SK하이닉스"
+                        value={krSearch}
+                        onChange={async e => {
+                          const q = e.target.value
+                          setKrSearch(q)
+                          setKrSelected(null)
+                          setForm(f => ({ ...f, ticker: '' }))
+                          if (q.length >= 1) {
+                            setKrLoading(true)
+                            try {
+                              const results = await api.searchKoreanStocks(q)
+                              setKrSuggestions(results)
+                            } catch {}
+                            setKrLoading(false)
+                          } else {
+                            setKrSuggestions([])
+                          }
+                        }}
+                        autoComplete="off"
+                      />
+                      {krLoading && <span className="hint">검색 중...</span>}
+                      {krSuggestions.length > 0 && !krSelected && (
+                        <ul className="kr-suggestions">
+                          {krSuggestions.map(s => (
+                            <li
+                              key={s.ticker}
+                              onClick={() => {
+                                setKrSelected({ ticker: s.ticker, name: s.name })
+                                setKrSearch(s.name)
+                                setForm(f => ({ ...f, ticker: s.ticker }))
+                                setKrSuggestions([])
+                              }}
+                            >
+                              <span className="kr-suggestion-name">{s.name}</span>
+                              <span className="kr-suggestion-meta">{s.ticker} · {s.market}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    {krSelected && (
+                      <span className="hint">선택됨: {krSelected.name} ({krSelected.ticker})</span>
+                    )}
+                    <span className="hint">종목명을 입력하면 자동완성 목록이 나타납니다.</span>
+                  </div>
+                )}
+
+                {/* 미국 주식 — 티커 직접 입력 */}
+                {market === 'US' && (
+                  <div className="form-row">
+                    <label>종목 티커</label>
+                    <input
+                      type="text"
+                      placeholder="예: TSLA, AAPL, NVDA"
+                      value={form.ticker}
+                      onChange={e => setForm(f => ({ ...f, ticker: e.target.value.toUpperCase() }))}
+                      required
+                    />
+                    <span className="hint">나스닥·뉴욕증권거래소 상장 종목의 영문 티커를 입력하세요.</span>
+                  </div>
+                )}
 
                 {error && <p className="error">{error}</p>}
 

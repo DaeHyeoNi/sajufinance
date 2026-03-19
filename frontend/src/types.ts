@@ -71,6 +71,7 @@ export interface RebalancingReportData {
 // ── 궁합: CEO 조회 ────────────────────────────────────────
 export interface CeoLookupRequest {
   ticker: string
+  company_name?: string | null  // 한국 주식 회사명 (CEO 검색 품질 향상)
 }
 
 export interface CeoLookupResponse {

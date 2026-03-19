@@ -484,6 +484,67 @@ textarea { resize: vertical; }
   margin-bottom: 0.75rem;
 }
 
+/* ── 시장 탭 ── */
+.market-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+.market-tab {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  border: 1.5px solid #d0c4b8;
+  border-radius: 8px;
+  background: #faf8f6;
+  color: #7a6552;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.market-tab.active {
+  background: #8b4513;
+  color: #fff;
+  border-color: #8b4513;
+}
+.market-tab:hover:not(.active) {
+  background: #f0e8e0;
+}
+
+/* ── 한국 종목 자동완성 ── */
+.kr-search-wrapper {
+  position: relative;
+}
+.kr-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #d0c4b8;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 100;
+}
+.kr-suggestions li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid #f0e8e0;
+  transition: background 0.15s;
+}
+.kr-suggestions li:last-child { border-bottom: none; }
+.kr-suggestions li:hover { background: #f5ede6; }
+.kr-suggestion-name { font-weight: 600; color: #3d3d3d; }
+.kr-suggestion-meta { font-size: 0.8rem; color: #9e8a78; }
+
 /* 궁합 결과 카드 */
 .compat-result-card {
   background: linear-gradient(135deg, #f5ede6 0%, #fdf8f4 100%);

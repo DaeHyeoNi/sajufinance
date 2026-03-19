@@ -7,7 +7,7 @@ from models import CeoCache
 from services.gemini_service import _call, _extract_json
 
 
-def get_or_search_ceo(db: Session, ticker: str) -> CeoCache:
+def get_or_search_ceo(db: Session, ticker: str, company_name: str | None = None) -> CeoCache:
     """ticker에 해당하는 CEO 정보를 DB 캐시에서 조회하거나, 없으면 웹 검색 후 저장.
 
     Args:
@@ -28,7 +28,9 @@ def get_or_search_ceo(db: Session, ticker: str) -> CeoCache:
         return cached
 
     # 2. 캐시 미스 → 웹 검색 + Gemini 파싱
-    info = _search_ceo_info(ticker_upper)
+    # 한국 주식은 종목코드보다 회사명으로 검색하는 게 훨씬 정확함
+    search_keyword = company_name or ticker_upper
+    info = _search_ceo_info(search_keyword)
 
     entry = CeoCache(
         ticker=ticker_upper,
@@ -42,7 +44,7 @@ def get_or_search_ceo(db: Session, ticker: str) -> CeoCache:
     return entry
 
 
-def _search_ceo_info(ticker: str) -> dict[str, str]:
+def _search_ceo_info(keyword: str) -> dict[str, str]:
     """DuckDuckGo로 CEO 정보를 검색하고 Gemini로 파싱하여 반환.
 
     Args:
@@ -60,9 +62,10 @@ def _search_ceo_info(ticker: str) -> dict[str, str]:
         raise RuntimeError("ddgs 패키지가 설치되지 않았습니다.") from exc
 
     # 두 가지 쿼리로 검색해 결과를 합산 (CEO 이름+생년월일 정보 확보율 향상)
+    # 한국 주식은 회사명+한국어 쿼리, 미국 주식은 영문 쿼리
     queries = [
-        f"{ticker} stock company CEO birthday born year",
-        f"{ticker} CEO wikipedia birthdate",
+        f"{keyword} CEO birthday born year",
+        f"{keyword} CEO wikipedia birthdate",
     ]
     snippets: list[str] = []
 
@@ -78,12 +81,12 @@ def _search_ceo_info(ticker: str) -> dict[str, str]:
         raise RuntimeError(f"DuckDuckGo 검색 실패: {exc}") from exc
 
     if not snippets:
-        raise RuntimeError(f"'{ticker}'에 대한 검색 결과가 없습니다.")
+        raise RuntimeError(f"'{keyword}'에 대한 검색 결과가 없습니다.")
 
     search_text = "\n\n".join(snippets)
 
     prompt = (
-        f"아래 검색 결과에서 {ticker}의 CEO 이름과 생년월일을 추출하세요.\n"
+        f"아래 검색 결과에서 {keyword}의 CEO(대표이사) 이름과 생년월일을 추출하세요.\n"
         f"JSON으로만 응답하세요 (마크다운 코드블록 포함):\n"
         '```json\n'
         '{"company_name": "회사명", "ceo_name": "CEO 이름", "ceo_birth_date": "YYYY-MM-DD 또는 YYYY"}\n'

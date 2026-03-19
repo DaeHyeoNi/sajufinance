@@ -76,7 +76,8 @@ class RebalancingReportData(BaseModel):
 # ── 궁합: CEO 조회 ─────────────────────────────────────────
 
 class CeoLookupRequest(BaseModel):
-    ticker: str  # 예: "TSLA", "005930" (삼성전자)
+    ticker: str                        # 예: "TSLA", "005930"
+    company_name: str | None = None    # 한국 주식 회사명 (검색 품질 향상용)
 
 
 class CeoLookupResponse(BaseModel):

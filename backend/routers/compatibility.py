@@ -1,7 +1,11 @@
 """주식-사주 궁합 라우터."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+import json
+import os
+from functools import lru_cache
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -18,6 +22,29 @@ from services.gemini_service import generate_saju_compatibility
 from services.saju_service import _compute_pillars, SIJU_TO_HOUR
 
 router = APIRouter(prefix="/api/compatibility", tags=["compatibility"])
+
+_KOREAN_STOCKS_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "korean_stocks.json")
+
+
+@lru_cache(maxsize=1)
+def _load_korean_stocks() -> list[dict]:
+    with open(_KOREAN_STOCKS_PATH, encoding="utf-8") as f:
+        return json.load(f)
+
+
+@router.get("/korean-stocks/search")
+def search_korean_stocks(q: str = Query(..., min_length=1)) -> list[dict]:
+    """한국 상장종목 이름 검색 (자동완성용).
+
+    Returns:
+        최대 20개 [{ticker, name, market}]
+    """
+    q_lower = q.lower()
+    results = [
+        s for s in _load_korean_stocks()
+        if q_lower in s["name"].lower() or q in s["ticker"]
+    ]
+    return results[:20]
 
 
 def _parse_ceo_birth(birth_date_str: str) -> tuple[int, int, int]:
@@ -57,7 +84,7 @@ def lookup_ceo(req: CeoLookupRequest, db: Session = Depends(get_db)) -> CeoLooku
     from_cache = already_cached is not None
 
     try:
-        entry = get_or_search_ceo(db, ticker_upper)
+        entry = get_or_search_ceo(db, ticker_upper, company_name=req.company_name)
     except RuntimeError:
         # 검색/파싱 실패 시 found=False로 정상 응답
         return CeoLookupResponse(

@@ -15,7 +15,7 @@ from schemas import (
 )
 from services.ceo_search_service import get_or_search_ceo
 from services.gemini_service import generate_saju_compatibility
-from services.saju_service import _compute_pillars
+from services.saju_service import _compute_pillars, SIJU_TO_HOUR
 
 router = APIRouter(prefix="/api/compatibility", tags=["compatibility"])
 
@@ -83,15 +83,15 @@ def analyze_compatibility(
 
     처리 흐름:
     1. custom_ceo_birth_date가 있으면 CEO 조회 없이 그 날짜로 분석 진행.
-       이 경우 ceo_name/company_name은 캐시에서 가져오거나 ticker로 대체.
+       이 경우 ceo_name/company_name은 custom 값 → 캐시 순으로 보완.
     2. custom_ceo_birth_date가 없으면 CEO 정보 조회 (캐시 or DuckDuckGo 검색).
        조회 실패 시 422 에러 (수동 입력 필수 안내).
     3. 투자자 사주 계산 (_compute_pillars).
-    4. CEO 사주 계산 (_compute_pillars, gender="남", birth_hour=None).
+    4. CEO 사주 계산: custom_ceo_birth_hour가 있으면 그 시진 사용, 없으면 None.
     5. Gemini 궁합 분석 생성.
 
     Args:
-        req: 투자자 정보 + ticker + 선택적 CEO 생년월일 오버라이드.
+        req: 투자자 정보 + ticker + 선택적 CEO 오버라이드 필드 일체.
         db: SQLAlchemy DB 세션 (DI).
 
     Returns:
@@ -109,12 +109,20 @@ def analyze_compatibility(
     ceo_birth_date_str: str
 
     if req.custom_ceo_birth_date:
-        # custom 날짜가 있으면 CEO 조회 없이 진행; 이름/회사는 캐시에서 보완
+        # custom 날짜가 있으면 CEO 조회 없이 진행
         ceo_birth_date_str = req.custom_ceo_birth_date
-        cached = db.query(CeoCache).filter(CeoCache.ticker == ticker_upper).first()
-        if cached:
-            ceo_name = cached.ceo_name
-            company_name = cached.company_name
+        # 이름/회사: custom 값 우선 → 캐시 보완 → ticker 폴백
+        if req.custom_ceo_name:
+            ceo_name = req.custom_ceo_name
+        if req.custom_company_name:
+            company_name = req.custom_company_name
+        if not req.custom_ceo_name or not req.custom_company_name:
+            cached = db.query(CeoCache).filter(CeoCache.ticker == ticker_upper).first()
+            if cached:
+                if not req.custom_ceo_name:
+                    ceo_name = cached.ceo_name
+                if not req.custom_company_name:
+                    company_name = cached.company_name
     else:
         # custom 날짜 없음 → CEO 정보 조회 필수
         try:
@@ -129,8 +137,9 @@ def analyze_compatibility(
                 ),
             )
         ceo_birth_date_str = ceo_entry.ceo_birth_date
-        ceo_name = ceo_entry.ceo_name
-        company_name = ceo_entry.company_name
+        # custom 이름/회사 오버라이드 적용
+        ceo_name = req.custom_ceo_name or ceo_entry.ceo_name
+        company_name = req.custom_company_name or ceo_entry.company_name
 
     # 투자자 사주 계산
     try:
@@ -141,10 +150,16 @@ def analyze_compatibility(
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"투자자 사주 계산 실패: {exc}")
 
-    # CEO 사주 계산 (현지 날짜 그대로 사용, 시진 불명이므로 birth_hour=None)
+    # CEO 사주 계산: custom_ceo_birth_hour가 있으면 시진 변환 후 사용, 없으면 None
+    ceo_birth_hour: str | None = req.custom_ceo_birth_hour
+    if ceo_birth_hour and ceo_birth_hour not in SIJU_TO_HOUR:
+        raise HTTPException(
+            status_code=422,
+            detail=f"유효하지 않은 시진입니다: '{ceo_birth_hour}'. 유효한 값: {list(SIJU_TO_HOUR.keys())}",
+        )
     try:
         ceo_year, ceo_month, ceo_day = _parse_ceo_birth(ceo_birth_date_str)
-        ceo_pillars = _compute_pillars(ceo_year, ceo_month, ceo_day, None, "남")
+        ceo_pillars = _compute_pillars(ceo_year, ceo_month, ceo_day, ceo_birth_hour, "남")
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"CEO 사주 계산 실패: {exc}")
 
@@ -157,6 +172,7 @@ def analyze_compatibility(
             ceo_pillars=ceo_pillars,
             company_name=company_name,
             ticker=ticker_upper,
+            ceo_birth_hour=ceo_birth_hour,
         )
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"궁합 분석 실패: {exc}")

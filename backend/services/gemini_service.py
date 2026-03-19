@@ -207,6 +207,7 @@ def generate_saju_compatibility(
     ceo_pillars: dict[str, Any],
     company_name: str,
     ticker: str,
+    ceo_birth_hour: str | None = None,
 ) -> dict[str, Any]:
     """사용자 사주 + CEO 사주 궁합 분석.
 
@@ -217,6 +218,7 @@ def generate_saju_compatibility(
         ceo_pillars: CEO의 사주 팔자 데이터 (sajupy 계산 결과).
         company_name: 기업명.
         ticker: 종목 코드.
+        ceo_birth_hour: CEO 시진 (예: "자시"). None이면 시각 불명으로 처리.
 
     Returns:
         {
@@ -226,6 +228,15 @@ def generate_saju_compatibility(
         }
     """
     today = date.today().strftime("%Y년 %m월 %d일")
+
+    # CEO 시진 유무에 따라 프롬프트 문구 분기
+    if ceo_birth_hour:
+        ceo_hour_line = f"CEO 태어난 시: {_SIJU_LABEL.get(ceo_birth_hour, ceo_birth_hour)}"
+        ceo_hour_note = "CEO 시주(時柱)까지 포함하여 분석합니다."
+    else:
+        ceo_hour_line = "CEO 태어난 시각 불명 — 일간(日干) 위주 분석"
+        ceo_hour_note = "CEO의 태어난 시각은 불명이므로 일간(日干) 위주로 분석합니다."
+
     prompt = f"""당신은 사주 명리학과 투자 분석을 결합한 전문가입니다.
 오늘 날짜: {today}
 
@@ -240,6 +251,7 @@ def generate_saju_compatibility(
 ## CEO 정보
 기업: {company_name} ({ticker})
 CEO: {ceo_name}
+{ceo_hour_line}
 사주 데이터 (JSON):
 {json.dumps(ceo_pillars, ensure_ascii=False, indent=2)}
 
@@ -250,7 +262,7 @@ CEO: {ceo_name}
 4. 투자자의 현재 운세 흐름과 이 투자의 타이밍
 
 ## 분석 시 주의사항
-- CEO의 태어난 시각은 불명이므로 일간(日干) 위주로 분석합니다.
+- {ceo_hour_note}
 - CEO 생년월일은 현지(출생지) 기준입니다.
 
 응답은 반드시 아래 JSON 형식으로, 마크다운 코드블록으로 감싸세요:

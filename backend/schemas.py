@@ -97,8 +97,11 @@ class CompatibilityRequest(BaseModel):
     birth_hour: str | None = None  # 시진
     gender: str                    # "남" / "여"
     ticker: str
-    # 사용자가 수동으로 수정한 CEO 생년월일 (None이면 캐시/검색 결과 사용)
-    custom_ceo_birth_date: str | None = None  # "YYYY-MM-DD"
+    # 사용자가 수동으로 수정한 CEO 정보 (None이면 캐시/검색 결과 사용)
+    custom_ceo_birth_date: str | None = None   # "YYYY-MM-DD"
+    custom_ceo_birth_hour: str | None = None   # 시진 (예: "자시"), 모르면 None
+    custom_ceo_name: str | None = None
+    custom_company_name: str | None = None
 
 
 # ── 궁합: 분석 결과 ────────────────────────────────────────

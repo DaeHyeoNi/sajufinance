@@ -67,3 +67,51 @@ export interface RebalancingReportData {
   narrative: string
   created_at: string
 }
+
+// ── 궁합: CEO 조회 ────────────────────────────────────────
+export interface CeoLookupRequest {
+  ticker: string
+}
+
+export interface CeoLookupResponse {
+  ticker: string
+  found: boolean
+  company_name: string
+  ceo_name: string
+  ceo_birth_date: string  // "YYYY-MM-DD" 또는 "YYYY"
+  from_cache: boolean
+}
+
+// ── 궁합: 분석 요청 ───────────────────────────────────────
+export interface CompatibilityRequest {
+  birth_year: number
+  birth_month: number
+  birth_day: number
+  birth_hour: string | null
+  gender: string
+  ticker: string
+  custom_ceo_birth_date?: string | null   // "YYYY-MM-DD"
+  custom_ceo_birth_hour?: string | null   // 시진 (예: "자시"), 모르면 null
+  custom_ceo_name?: string | null
+  custom_company_name?: string | null
+}
+
+// ── 궁합: 분석 결과 ───────────────────────────────────────
+export interface CompatibilityResponse {
+  ticker: string
+  company_name: string
+  ceo_name: string
+  ceo_birth_date: string
+  compatibility_score: number  // 1~5
+  recommendation: '매수' | '관망' | '주의'
+  reading: string  // 마크다운
+}
+
+// ── 잘못된 데이터 신고 ────────────────────────────────────
+export interface CeoReportRequest {
+  ticker: string
+  cached_ceo_name: string
+  cached_birth_date: string
+  correct_birth_date?: string | null
+  note?: string | null
+}

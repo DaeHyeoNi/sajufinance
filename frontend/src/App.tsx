@@ -5,6 +5,8 @@ import Step1SajuInput from './components/Step1SajuInput'
 import Step2PortfolioInput from './components/Step2PortfolioInput'
 import Step3Results from './components/Step3Results'
 import RebalancingReportPage from './components/RebalancingReportPage'
+import IntroPage from './components/IntroPage'
+import CompatibilityPage from './components/CompatibilityPage'
 import './App.css'
 
 type Step = 1 | 2 | 3
@@ -69,7 +71,9 @@ function WizardApp() {
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<WizardApp />} />
+      <Route path="/" element={<IntroPage />} />
+      <Route path="/rebalancer" element={<WizardApp />} />
+      <Route path="/compatibility" element={<CompatibilityPage />} />
       <Route path="/rebalancing-report/:uuid" element={<RebalancingReportPage />} />
     </Routes>
   )

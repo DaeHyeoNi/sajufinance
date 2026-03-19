@@ -3,6 +3,9 @@ import type {
   PortfolioParseRequest, PortfolioParseResponse,
   RebalanceRequest, RebalanceResponse,
   RebalancingReportData,
+  CeoLookupRequest, CeoLookupResponse,
+  CompatibilityRequest, CompatibilityResponse,
+  CeoReportRequest,
 } from '../types'
 
 async function post<T>(path: string, body: unknown): Promise<T> {
@@ -74,4 +77,13 @@ export const api = {
   streamRebalance,
 
   getReport,
+
+  lookupCeo: (req: CeoLookupRequest) =>
+    post<CeoLookupResponse>('/api/compatibility/lookup', req),
+
+  analyzeCompatibility: (req: CompatibilityRequest) =>
+    post<CompatibilityResponse>('/api/compatibility/analyze', req),
+
+  reportCeoData: (req: CeoReportRequest) =>
+    post<{ ok: boolean }>('/api/compatibility/report', req),
 }

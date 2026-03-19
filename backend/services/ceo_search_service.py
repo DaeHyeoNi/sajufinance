@@ -55,16 +55,21 @@ def _search_ceo_info(ticker: str) -> dict[str, str]:
         RuntimeError: 검색 결과가 없거나 Gemini 파싱 실패 시.
     """
     try:
-        from duckduckgo_search import DDGS
+        from ddgs import DDGS
     except ImportError as exc:
-        raise RuntimeError("duckduckgo-search 패키지가 설치되지 않았습니다.") from exc
+        raise RuntimeError("ddgs 패키지가 설치되지 않았습니다.") from exc
 
-    query = f"{ticker} CEO birth date born"
+    # 두 가지 쿼리로 검색해 결과를 합산 (CEO 이름+생년월일 정보 확보율 향상)
+    queries = [
+        f"{ticker} stock company CEO birthday born year",
+        f"{ticker} CEO wikipedia birthdate",
+    ]
     snippets: list[str] = []
 
     try:
         with DDGS() as ddgs:
-            results = list(ddgs.text(query, max_results=5))
+            for query in queries:
+                results = list(ddgs.text(query, max_results=4))
         for r in results:
             title = r.get("title", "")
             body = r.get("body", "")
